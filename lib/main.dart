@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
+//import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 void main() => runApp(MyApp());
 
@@ -27,11 +28,92 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.green,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: Login(),
     );
   }
 }
 
+// Login page
+class Login extends StatelessWidget {
+  @override
+  Widget build (BuildContext context) {
+    return new Scaffold(
+        body: Center(
+          // Center is a layout widget. It takes a single child and positions it
+          // in the middle of the parent.
+          child: Column(
+            // Column is also a layout widget. It takes a list of children and
+            // arranges them vertically. By default, it sizes itself to fit its
+            // children horizontally, and tries to be as tall as its parent.
+            //
+            // Invoke "debug painting" (press "p" in the console, choose the
+            // "Toggle Debug Paint" action from the Flutter Inspector in Android
+            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+            // to see the wireframe for each widget.
+            //
+            // Column has various properties to control how it sizes itself and
+            // how it positions its children. Here we use mainAxisAlignment to
+            // center the children vertically; the main axis here is the vertical
+            // axis because Columns are vertical (the cross axis would be
+            // horizontal).
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              // Display picked image in UI
+              //new Container(
+              //  child: Image.file(imageFile),
+              //),
+              Text(
+                'Login Page',
+              ),
+              RaisedButton(
+                color: Color(0xff3b5998),
+                shape:RoundedRectangleBorder(
+                  borderRadius: new BorderRadius.circular(18.0),
+                ),
+                textColor: Colors.white,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => new MyHomePage()),
+                  );
+                },
+                child: Text('Login with Facebook', style: TextStyle(fontSize: 20)),
+              ),
+            ],
+          ),
+        ),
+    );
+  }
+}
+
+// Profile page
+class Profile extends StatelessWidget {
+  @override
+  Widget build (BuildContext context) {
+    return new
+        Stack(
+          children: <Widget>[
+            ProfileBar(),
+            FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  new MaterialPageRoute(builder: (context) => new MyHomePage(title: "Pause")),
+                );
+              },
+              tooltip: 'Return to Home Page',
+              //child: Icon(Icons.add),
+              heroTag: "btn3",
+            ),
+            ProfileOptions(),
+
+            //ProfileOptions(),
+          ],
+        );
+  }
+}
+
+// Central app page
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
@@ -50,80 +132,139 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
+class CurvePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint();
+    // TODO: Set properties to paint
+    paint.color = Colors.black;
+    paint.style = PaintingStyle.fill;
+
+    var path = Path();
+
+    // TODO: Draw your path
+    path.moveTo(0, size.height * 0.25);
+    path.quadraticBezierTo(
+        size.width / 2, size.height / 2.5, size.width, size.height * 0.25);
+    path.lineTo(size.width, 0);
+    path.lineTo(0, 0);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+// App Bar
+class ProfileBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: CustomPaint(
+        painter: CurvePainter(),
+        child:  Stack(
+          children: <Widget>[
+            // Profile
+            Positioned(
+              top: (MediaQuery.of(context).size.height) * 0.1,
+              left: (MediaQuery.of(context).size.width) * 0.36,
+              width: 100,
+              height: 100,
+              child:  FlatButton(
+                color: Colors.white,
+                shape: CircleBorder(),
+                textColor: Colors.white,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => new Profile()),
+                  );
+                },
+              ),
+            ),
+            Positioned(
+              top: (MediaQuery.of( context).size.height) * 0.2,
+              left: (MediaQuery.of(context).size.width) * 0.64,
+              width: 30,
+              height: 30,
+              child:  IconButton(
+                color: Colors.white,
+                //shape: CircleBorder(),
+                //textColor: Colors.white,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => new Login()),
+                  );
+                },
+                icon: Icon(Icons.settings),
+              ),
+            ),
+          ],
+
+        ),
+      ),
+    );
+  }
+}
+
+// Profile page buttons set
+class ProfileOptions extends StatelessWidget{
+  @override
+  Widget build(BuildContext context) {
+    return  Scaffold(
+      body: Stack(
+          children: <Widget>[
+            // Profile
+            Positioned(
+              top: (MediaQuery.of(context).size.height) * 0.5,
+              left: (MediaQuery.of(context).size.width) * 0.36,
+
+              child:  FlatButton(
+                color: Colors.black,
+                textColor: Colors.white,
+                shape: CircleBorder(),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => new Profile()),
+                  );
+                },
+                child: new Icon(Icons.add, size: 100),
+              ),
+
+            ),
+
+          ],
+
+        ),
+    );
+  }
+}
+
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   File imageFile = null;
 
-  void _incrementCounter() {
+
+  void _uiLink() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter++;
-
-      // Firebase Interpretation of Image
-      //reachFirebase();
     });
+    // Firebase Interpretation of Image
+    reachFirebase();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    reachFirebase();
-
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body:
-        Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Display picked image in UI
-            new Container(
-              child: Image.file(imageFile),
-            ),
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: ProfileBar(),
     );
   }
 
@@ -136,42 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var blocks = new List();
 
     for (TextBlock block in visionText.blocks) {
-      final Rect boundingBox = block.boundingBox;
-      final List<Offset> cornerPoints = block.cornerPoints;
-      /*
-      double minX =  0;
-      double maxX =  0;
-      double minY =  0;
-      double maxY =  0;
-
-      if(block.boundingBox.topLeft.dx < block.boundingBox.bottomLeft.dx) {
-        minX = block.boundingBox.topLeft.dx.toDouble();
-      } else {
-        minX = block.boundingBox.bottomLeft.dx.toDouble();
-      }
-
-      if(block.boundingBox.topRight.dx > block.boundingBox.bottomRight.dx) {
-        maxX = block.boundingBox.topRight.dx.toDouble();
-      } else {
-        maxX = block.boundingBox.bottomRight.dx.toDouble();
-      }
-
-      if(block.boundingBox.topRight.dy > block.boundingBox.topLeft.dy) {
-        maxY = block.boundingBox.topRight.dy.toDouble();
-      } else {
-        maxY = block.boundingBox.topLeft.dy.toDouble();
-      }
-
-      if(block.boundingBox.bottomRight.dy < block.boundingBox.bottomLeft.dy) {
-        minY = block.boundingBox.bottomRight.dy.toDouble();
-      } else {
-        minY = block.boundingBox.bottomLeft.dy.toDouble();
-      }
-
-      blocks.add([minX, minY, maxX, maxY]);
-      */
       for (TextLine line in block.lines) {
-
                 double minX =  0;
                 double maxX =  0;
                 double minY =  0;
@@ -202,39 +308,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
 
                 blocks.add([minX, minY, maxX, maxY]);
-                /*
-                for(TextElement e in line.elements){
-                    double minX =  0;
-                    double maxX =  0;
-                    double minY =  0;
-                    double maxY =  0;
-
-                    if(e.boundingBox.topLeft.dx < e.boundingBox.bottomLeft.dx) {
-                      minX = e.boundingBox.topLeft.dx.toDouble();
-                    } else {
-                      minX = e.boundingBox.bottomLeft.dx.toDouble();
-                    }
-
-                    if(e.boundingBox.topRight.dx > e.boundingBox.bottomRight.dx) {
-                      maxX = e.boundingBox.topRight.dx.toDouble();
-                    } else {
-                      maxX = e.boundingBox.bottomRight.dx.toDouble();
-                    }
-
-                    if(e.boundingBox.topRight.dy > e.boundingBox.topLeft.dy) {
-                      maxY = e.boundingBox.topRight.dy.toDouble();
-                    } else {
-                      maxY = e.boundingBox.topLeft.dy.toDouble();
-                    }
-
-                    if(e.boundingBox.bottomRight.dy < e.boundingBox.bottomLeft.dy) {
-                      minY = e.boundingBox.bottomRight.dy.toDouble();
-                    } else {
-                      minY = e.boundingBox.bottomLeft.dy.toDouble();
-                    }
-
-                    blocks.add([minX, minY, maxX, maxY]);
-                }*/
       }
       print(blocks);
     }
@@ -246,7 +319,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> reachServer(String imageText, String linesBoundingBoxes) async {
-    var url = 'http://192.168.1.17:5000/';
+    var url = 'http://10.0.2.2:5000/'; // 10.0.2.2 [school] or 192.168.1.17 [home]
     /* Make standard get request
     var response = await http.get(url);
     */
@@ -270,4 +343,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     print(fileResponse.body);
   }
+
+
 }
