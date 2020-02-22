@@ -6,14 +6,23 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter/services.dart';
 //import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // Block Screen orientation in whole app
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -90,10 +99,12 @@ class Login extends StatelessWidget {
 class Profile extends StatelessWidget {
   @override
   Widget build (BuildContext context) {
-    return new
-        Stack(
+    return new Scaffold(
+        body: Stack(
           children: <Widget>[
             ProfileBar(),
+            ProfileOptions(),
+            //TODO: Real Back Button
             FloatingActionButton(
               onPressed: () {
                 Navigator.push(
@@ -101,15 +112,14 @@ class Profile extends StatelessWidget {
                   new MaterialPageRoute(builder: (context) => new MyHomePage(title: "Pause")),
                 );
               },
+              child: Icon(Icons.arrow_back),
               tooltip: 'Return to Home Page',
               //child: Icon(Icons.add),
               heroTag: "btn3",
             ),
-            ProfileOptions(),
-
-            //ProfileOptions(),
           ],
-        );
+        ),
+    );
   }
 }
 
@@ -195,16 +205,12 @@ class ProfileBar extends StatelessWidget {
                 //shape: CircleBorder(),
                 //textColor: Colors.white,
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    new MaterialPageRoute(builder: (context) => new Login()),
-                  );
+                  // TODO
                 },
                 icon: Icon(Icons.settings),
               ),
             ),
           ],
-
         ),
       ),
     );
@@ -215,33 +221,57 @@ class ProfileBar extends StatelessWidget {
 class ProfileOptions extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-      body: Stack(
+    return Stack(
           children: <Widget>[
-            // Profile
+            // Add Schedule Button
             Positioned(
-              top: (MediaQuery.of(context).size.height) * 0.5,
-              left: (MediaQuery.of(context).size.width) * 0.36,
+              top: (MediaQuery.of(context).size.height) * 0.8,
+              left: (MediaQuery.of(context).size.width) * 0.3,
 
               child:  FlatButton(
                 color: Colors.black,
                 textColor: Colors.white,
                 shape: CircleBorder(),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    new MaterialPageRoute(builder: (context) => new Profile()),
-                  );
+                  // TODO
                 },
-                child: new Icon(Icons.add, size: 100),
+                child: new Icon(Icons.add, size: 115),
               ),
-
             ),
+            // Geolocalisation button
+            Positioned(
+              top: (MediaQuery.of(context).size.height) * 0.715,
+              left: (MediaQuery.of(context).size.width) * 0.07,
+              width: 85,
+              height: 85,
+              child:  FlatButton(
+                color: Colors.black,
+                textColor: Colors.white,
+                shape: CircleBorder(),
+                onPressed: () {
+                  // TODO
+                },
+                child: new Icon(Icons.location_on, size: 42.5),
+              ),
+            ),
+            // Do not disturb button
+            Positioned(
+              top: (MediaQuery.of(context).size.height) * 0.7,
+              left: (MediaQuery.of(context).size.width) * 0.63,
 
+              child:  FlatButton(
+                //color: Colors.white,
+                textColor: Colors.black,
+                shape: CircleBorder(),
+                onPressed: () {
+                  // TODO
+                },
+                child: new Icon(Icons.do_not_disturb_on, size: 100),
+              ),
+            ),
           ],
 
-        ),
-    );
+        );
   }
 }
 
