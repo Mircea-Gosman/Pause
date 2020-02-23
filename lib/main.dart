@@ -7,7 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter/services.dart';
-//import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'dart:convert' as JSON;
 
 void main() => runApp(MyApp());
 
@@ -81,16 +82,52 @@ class Login extends StatelessWidget {
                 ),
                 textColor: Colors.white,
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    new MaterialPageRoute(builder: (context) => new MyHomePage()),
-                  );
+                  loginToFB(context);
                 },
                 child: Text('Login with Facebook', style: TextStyle(fontSize: 20)),
               ),
             ],
           ),
         ),
+    );
+  }
+
+  Future<void> loginToFB(BuildContext context) async{
+    final facebookLogin = FacebookLogin();
+    final result = await facebookLogin.logIn(['user_friends']);
+
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        // Get user data from Facebook
+        getDataFromFB(result.accessToken.token); // TODO: Assign User object to the return of this function
+
+        // Redirect to HomePage
+        goToHomePage(context);                   // TODO: Pass the user object to this function
+
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        //TODO: Show appropriate error message
+        break;
+      case FacebookLoginStatus.error:
+        //TODO: Show appropriate error message
+        break;
+    }
+  }
+
+  void getDataFromFB(String token) async{
+    final graphResponse = await http.get(
+        'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,picture,friends&access_token=${token}');
+    final profile = JSON.jsonDecode(graphResponse.body);
+    final profilePictureURL = profile['picture']['data']['url']; // Format of picture obj.: {data: {height: 50, is_silhouette: false, url: https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=2244735515835110&height=50&width=50&ext=1585085593&hash=AeT70MYhWvAdn6ua, width: 50}}
+    final friendList = profile['friends']['data'];               // Format of friends obj.: {data: [], summary: {total_count: 216}} ;; it only includes friends that use the app & who give permission
+
+    // TODO: create new User object as return to this function
+  }
+
+  void goToHomePage(BuildContext context){
+    Navigator.push(
+      context,
+      new MaterialPageRoute(builder: (context) => new MyHomePage()), // TODO: Pass User Object to homepage
     );
   }
 }
@@ -183,7 +220,7 @@ class ProfileBar extends StatelessWidget {
               left: (MediaQuery.of(context).size.width) * 0.36,
               width: 100,
               height: 100,
-              child:  FlatButton(
+              child: FlatButton(
                 color: Colors.white,
                 shape: CircleBorder(),
                 textColor: Colors.white,
