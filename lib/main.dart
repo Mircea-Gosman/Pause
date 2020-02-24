@@ -9,6 +9,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'dart:convert' as JSON;
+import 'package:location/location.dart';
 
 void main() => runApp(MyApp());
 
@@ -43,7 +44,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Login page
+// Login page TODO: Handle already logged in case
 class Login extends StatelessWidget {
   @override
   Widget build (BuildContext context) {
@@ -270,7 +271,8 @@ class ProfileOptions extends StatelessWidget{
                 textColor: Colors.white,
                 shape: CircleBorder(),
                 onPressed: () {
-                  // TODO
+                  reachFirebase();
+                  // TODO: Show additional dialogs, ie. schedule adjustments, etc.
                 },
                 child: new Icon(Icons.add, size: 115),
               ),
@@ -286,6 +288,7 @@ class ProfileOptions extends StatelessWidget{
                 textColor: Colors.white,
                 shape: CircleBorder(),
                 onPressed: () {
+                  setLocationAvailable();
                   // TODO
                 },
                 child: new Icon(Icons.location_on, size: 42.5),
@@ -310,33 +313,13 @@ class ProfileOptions extends StatelessWidget{
 
         );
   }
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  File imageFile = null;
 
 
-  void _uiLink() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-    });
-    // Firebase Interpretation of Image
-    reachFirebase();
-  }
+  // --------------------------------------- Start of Firebase Code --------------
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: ProfileBar(),
-    );
-  }
-
+  // Does this need to be Future<void> ?
   Future<void> reachFirebase() async {
-    imageFile =  await pickImage();
+    File imageFile =  await pickImage();
     final FirebaseVisionImage visionImage = FirebaseVisionImage.fromFile(imageFile);
     final TextRecognizer textRecognizer = FirebaseVision.instance.textRecognizer();
     final VisionText visionText = await textRecognizer.processImage(visionImage);
@@ -345,47 +328,47 @@ class _MyHomePageState extends State<MyHomePage> {
 
     for (TextBlock block in visionText.blocks) {
       for (TextLine line in block.lines) {
-                double minX =  0;
-                double maxX =  0;
-                double minY =  0;
-                double maxY =  0;
+        double minX =  0;
+        double maxX =  0;
+        double minY =  0;
+        double maxY =  0;
 
-                if(line.boundingBox.topLeft.dx < line.boundingBox.bottomLeft.dx) {
-                   minX = line.boundingBox.topLeft.dx.toDouble();
-                } else {
-                   minX = line.boundingBox.bottomLeft.dx.toDouble();
-                }
+        if(line.boundingBox.topLeft.dx < line.boundingBox.bottomLeft.dx) {
+          minX = line.boundingBox.topLeft.dx.toDouble();
+        } else {
+          minX = line.boundingBox.bottomLeft.dx.toDouble();
+        }
 
-                if(line.boundingBox.topRight.dx > line.boundingBox.bottomRight.dx) {
-                  maxX = line.boundingBox.topRight.dx.toDouble();
-                } else {
-                  maxX = line.boundingBox.bottomRight.dx.toDouble();
-                }
+        if(line.boundingBox.topRight.dx > line.boundingBox.bottomRight.dx) {
+          maxX = line.boundingBox.topRight.dx.toDouble();
+        } else {
+          maxX = line.boundingBox.bottomRight.dx.toDouble();
+        }
 
-                if(line.boundingBox.topRight.dy > line.boundingBox.topLeft.dy) {
-                  maxY = line.boundingBox.topRight.dy.toDouble();
-                } else {
-                  maxY = line.boundingBox.topLeft.dy.toDouble();
-                }
+        if(line.boundingBox.topRight.dy > line.boundingBox.topLeft.dy) {
+          maxY = line.boundingBox.topRight.dy.toDouble();
+        } else {
+          maxY = line.boundingBox.topLeft.dy.toDouble();
+        }
 
-                if(line.boundingBox.bottomRight.dy < line.boundingBox.bottomLeft.dy) {
-                  minY = line.boundingBox.bottomRight.dy.toDouble();
-                } else {
-                  minY = line.boundingBox.bottomLeft.dy.toDouble();
-                }
+        if(line.boundingBox.bottomRight.dy < line.boundingBox.bottomLeft.dy) {
+          minY = line.boundingBox.bottomRight.dy.toDouble();
+        } else {
+          minY = line.boundingBox.bottomLeft.dy.toDouble();
+        }
 
-                blocks.add([minX, minY, maxX, maxY]);
+        blocks.add([minX, minY, maxX, maxY]);
       }
       print(blocks);
     }
-    reachServer(text,blocks.toString());
+    reachServer(text,blocks.toString(), imageFile);
   }
 
   Future<File> pickImage() async {
     return  ImagePicker.pickImage(source: ImageSource.gallery);
   }
 
-  Future<void> reachServer(String imageText, String linesBoundingBoxes) async {
+  Future<void> reachServer(String imageText, String linesBoundingBoxes, File imageFile) async {
     var url = 'http://10.0.2.2:5000/'; // 10.0.2.2 [school] or 192.168.1.17 [home]
     /* Make standard get request
     var response = await http.get(url);
@@ -411,5 +394,43 @@ class _MyHomePageState extends State<MyHomePage> {
     print(fileResponse.body);
   }
 
+  // --------------------------------------- End of Firebase Code --------------
+  // --------------------------------------- Start of GeoLocation Code ---------
+  void setLocationAvailable() async{
+    Location location = new Location();
 
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.DENIED) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.GRANTED) {
+        return;
+      }
+    }
+
+    // Real-Time location listener
+    location.onLocationChanged().listen((LocationData currentLocation) {
+      // TODO: Use current location
+    });
+  }
+  // --------------------------------------- End of GeoLocation Code -----------
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ProfileBar(),
+    );
+  }
 }
