@@ -1,6 +1,7 @@
 import flask
 from flask import request
-import houghLinesP
+from ImageData import ImageInfo
+from ServerOCR.OCR import OCR
 
 app = flask.Flask(__name__)
 
@@ -8,15 +9,15 @@ app = flask.Flask(__name__)
 def handle_request():
     if request.method == 'POST':
         #handle post requests with files
+        # Save file
         imageFile = request.files['Schedule']
         imageFileName = 'schedule.'+ request.form['ext']
-        imageFileText = request.form['imageText']
-        imageTextBounds = request.form['linesBoundingBoxes']
         imageFile.save(imageFileName)
+        print('hello')
+        # Hold extracted data
+        imageInfo = ImageInfo(request.form['coordinates'], request.form['linesText'], imageFileName)
 
-        houghLinesP.parseImage(imageFileName, imageFileText, imageTextBounds)
         # handle post requests with {'key' : 'value'}
-        print(imageFileText)
         return "Post request handled by server succesfully."
     else :
         # handle get requests
