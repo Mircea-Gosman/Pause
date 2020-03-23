@@ -1,40 +1,40 @@
 class Course:
     def __init__(self, lineList):
         self.lineList = lineList
-        self.bounds = self.computeBounds(lineList)
-        self.averageLineHeight = self.calculateAverageLineHeight(lineList)
+
+        self.computeBounds(lineList)
 
     def computeBounds(self, lineList):
-        leftBound = lineList[0].coordinates[0]
-        upperBound = lineList[0].coordinates[1]
-        rightBound = lineList[0].coordinates[2]
-        lowerBound = lineList[0].coordinates[3]
+        leftBound = lineList[0].topLeft[0]
+        upperBound = lineList[0].topLeft[1]
+        rightBound = lineList[0].topLeft[0] + lineList[0].width
+        lowerBound = lineList[0].topLeft[1] + lineList[0].height
+        totalLineHeight = 0
 
         for i in range(len(lineList)):
-            if lineList[i].coordinates[0] < leftBound:
-                leftBound = lineList[i].coordinates[0]
+            if lineList[i].topLeft[0] < leftBound:
+                leftBound = lineList[i].topLeft[0]
 
-            if lineList[i].coordinates[3] < upperBound:
-                upperBound = lineList[i].coordinates[3]
+            if lineList[i].topLeft[1] < upperBound:
+                upperBound = lineList[i].topLeft[1]
 
-            if lineList[i].coordinates[2] > rightBound:
-                rightBound = lineList[i].coordinates[2]
+            if lineList[i].topLeft[0] + lineList[i].width > rightBound:
+                rightBound = lineList[i].topLeft[0] + lineList[i].width
 
-            if lineList[i].coordinates[1] > lowerBound:
-                lowerBound = lineList[i].coordinates[1]
+            if lineList[i].topLeft[1] + lineList[i].height > lowerBound:
+                lowerBound = lineList[i].topLeft[1] + lineList[i].height
 
-        return [leftBound, upperBound, rightBound, lowerBound]
+            totalLineHeight += lineList[i].height
 
-    def calculateAverageLineHeight(self, lineList):
-        average = 0
 
-        for line in lineList:
-            average += (line.coordinates[1] - line.coordinates[3])
 
-        return int(average/len(lineList))
+        self.topLeft = [leftBound, upperBound]
+        self.width = rightBound - leftBound
+        self.height = lowerBound - upperBound
+        self.averageLineHeight = int(totalLineHeight/len(lineList))
 
-    def setStartHour(self, hour):
-        self.startHour = hour
+    def setStartTime(self, time):
+        self.startTime = time
 
-    def setEndHour(self, hour):
-        self.endHour = hour
+    def setEndTime(self, time):
+        self.endTime = time

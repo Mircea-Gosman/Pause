@@ -1,230 +1,244 @@
 import numpy as np
-import cv2 as cv
-import operator
+import Helpers.TesseractHelpers as tsH
+import Helpers.OpenCVHelpers as cvH
+import Helpers.CustomMathHelpers as cmtH
 
 from sklearn.cluster import DBSCAN, MeanShift, estimate_bandwidth
-
-from ScheduleAnalysis.Course import Course # weird that root of project has to be used
+from SpellChecker.OCRCorrector import Corrector
+from ScheduleAnalysis.Course import Course
 from ScheduleAnalysis.Day import Day
-from ScheduleAnalysis.Hour import Hour
-from ScheduleAnalysis.PortableSchedule import PortableSchedule
-
-from ImageLine import Line
-from LineTypes import LineType
-from ImageGraphicalLine import GraphicalLine
-
-
-import OpenCVHelper
 
 class Schedule:
-    def __init__(self, top_left, top_right, bottom_right, bottom_left):
-        self.top_left = top_left
-        self.top_right = top_right
-        self.bottom_left = bottom_left
-        self.bottom_right = bottom_right
-
+    def __init__(self, fileName, topLeft, width, height):
+        self.fileName = fileName
+        self.topLeft = topLeft
+        self.width = width
+        self.height = height
+        self.textLines = self.extractTextLines(self.topLeft, self.width, self.height, 1)
+        self.graphicalLines = self.extractGraphicalLines(self.topLeft, self.width, self.height, 1)
         self.testPoints = []
+        self.initiateAnalysis()
 
-        self.calculateBounds()
+    def extractTextLines(self, topLeft, width, height, test, config=None):
+        scheduleImg = cvH.cropImage(self.fileName, topLeft, width, height, test)
 
-    def calculateBounds(self):
-        self.leftBound = self.top_left[0] if self.top_left[0] < self.bottom_left[0] else self.bottom_left[0]
-        self.rightBound = self.top_right[0] if self.top_right[0] > self.bottom_right[0] else self.bottom_right[0]
-        self.lowerBound = self.bottom_left[1] if self.bottom_left[1] > self.bottom_right[1] else self.bottom_right[1]
-        self.upperBound = self.top_left[1] if self.top_left[1] < self.top_right[1] else self.top_right[1]
+        if config is None:
+            return tsH.readScheduleTextLines(scheduleImg)
+        else:
+            return tsH.readScheduleTextLines(scheduleImg, config)
 
-    def storeComponents(self, textualLinesList, graphicalLinesList):
-        self.graphicalLines = self.storeGraphicalComponents(graphicalLinesList)
-        courses = []
-        lineHours = []
-        lineDays = []
+    def extractGraphicalLines(self, topLeft, width, height, test):
+        self.scheduleImg = cvH.cropImage(self.fileName, topLeft, width, height, test)
+        return cvH.houghLinesP(self.scheduleImg)
 
-        for i in range(len(textualLinesList)):
-            if textualLinesList[i].type == LineType.CLASS:
-                courses.append(textualLinesList[i])
-            if textualLinesList[i].type == LineType.HOUR:
-                lineHours.append(textualLinesList[i])
-            if textualLinesList[i].type == LineType.DAY:
-                lineDays.append(textualLinesList[i])
+    def initiateAnalysis(self):
+        # LineHours = analyseHours() grouping function for hours
+        lowResLineHours = self.extractLowResLineHours()
+        lowResLineHoursPosition = cmtH.findMedian(lowResLineHours, 'x')
+        mediumResLineHours = self.extractMediumResLineHours(lowResLineHours, lowResLineHoursPosition)
+        lineHoursRegion = self.formatLineHoursRegion(mediumResLineHours)
+        # Applying tesseract to hours column for 'better' results ||| FRAGILE: result isnt improved, find a way to run Tes. on individual hour squares
+        highResLineHours = cmtH.sortLineList(self.extractTextLines(lineHoursRegion[0], lineHoursRegion[1], lineHoursRegion[2], 2, '6'), 'y')
+        nonHours = cmtH.stripList(self.textLines, highResLineHours) # simplify further operations
 
-        lineDays = self.sortDays(lineDays)
 
-        hours, hoursClustering = self.postProcessHours(lineHours)
-        self.days = self.groupCourses(courses, lineDays) # self only for drawing purposes
+        #print(nonHours)
+        #for line in nonHours:
+            #print(line.text)
 
-        # Store the data in an Object to be transfered to JSON later
-        self.PortableSchedule = PortableSchedule(self.assignHoursToCourses(self.days, hours, hoursClustering))
+        # Days
+        lowResLineDays = self.extractLowResLineDays(nonHours)
+        lowResLineDaysPosition = cmtH.findMedian(lowResLineDays, 'y')
+        mediumResLineDays = cmtH.sortLineList(self.extractMediumResLineDays(lowResLineDays, lowResLineDaysPosition), 'x') # here more postprocessing can be done (like what is done with hours, chosing not to for poor results of existing hours method)
 
-    def storeGraphicalComponents(self, allGraphicalLines):
-        graphicalLines = []
+        # Courses
+        lineCourses = cmtH.stripList(nonHours, mediumResLineDays)
+        daySortedLineCourses = self.assignCourseLinesToDay(lineCourses, mediumResLineDays)
+        daySortedObjectCourses = self.clusterCourseLines(daySortedLineCourses)
 
-        # Filter lines within schedule bounds
-        for i in range(len(allGraphicalLines)):
-            for x1,y1,x2,y2 in allGraphicalLines[i]:
-                if (x1 > self.leftBound and x1 < self.rightBound and
-                    y1 > self.upperBound  and y2 < self.lowerBound):
-                  graphicalLines.append(GraphicalLine(allGraphicalLines[i]))
+        # Assign start and end time to courses
+        self.assignTimeToObjectCourses(highResLineHours, daySortedObjectCourses)
 
-        return graphicalLines
+        cvH.drawCourses(self.fileName, self.topLeft, self.width, self.height, daySortedObjectCourses)
+        cvH.drawPoints(self.fileName, self.topLeft, self.width, self.height, self.testPoints)
 
-    # Update hours list with information Firebase missed [missing items, incorrect text]
-    def postProcessHours(self, lineHours):
-        textPoints = []
+        print(daySortedObjectCourses)
+        for day in daySortedObjectCourses:
+            for course in day.courses:
+                print('----------- Course -----------')
+                print(course.startTime)
+                print(course.endTime)
+                print('++++++')
+                for line in course.lineList:
+                    print(line.text)
 
-        # Approximate hours' region X-Axis bounds
-        minX = lineHours[0].coordinates[0]
-        maxX = lineHours[0].coordinates[2]
+    def extractLowResLineHours(self):
+        lowResLineHours = []
 
-        # Filter graphical lines to the hours' region
-        for i in range(len(self.graphicalLines)):
-            if self.graphicalLines[i].start[0] > minX and self.graphicalLines[i].end[0] < maxX:
-                # Convert line to points
-                linePoints = self.graphicalLines[i].generatePoints()
+        for line in self.textLines:
+            if len(line.text) < 7 and len(line.text) > 2 and (':' or ';' or '.') in line.text: # TODO: implement stronger or different verification algorithm if needed
+                lowResLineHours.append(line)
 
-                # Attempt to separate horizontal lines (schedule layout) from text
-                for j in range(len(linePoints)):
-                    if self.graphicalLines[i].isLinear():
-                        textPoints.append([linePoints[j][1]]) # Y axis only
+        return lowResLineHours
 
-        # Place graphical text points into groups
-        nptextPoints = np.array(textPoints)
-        bandwidth = estimate_bandwidth(nptextPoints, quantile= 0.038, n_jobs= -1) # FRAGILE adjust quantile number
-        hoursClustering = MeanShift(bandwidth=bandwidth).fit(nptextPoints)
-        clusterCenters = hoursClustering.cluster_centers_
+    def extractMediumResLineHours(self, lrLines, lrLinesPosition):
+        mediumResLineHours = []
 
-        # For illustration only:
-        for y in clusterCenters:
-            self.testPoints.append([minX, y])
+        for line in lrLines:
+            tolerance = line.width/2
+            if lrLinesPosition > line.topLeft[0] - tolerance and lrLinesPosition < line.topLeft[0] + line.width + tolerance:
+            #    and line.coordinates[1] > daysMedianY):                                        # TODO: Add this condition later if wanted
+                mediumResLineHours.append(line)
 
-        # DBSCAN untweaked Alternative
-        #hoursClustering = DBSCAN(eps=3, min_samples=5).fit(textPoints)
-        #self.testPoints  = hoursClustering.components_
+        return mediumResLineHours
 
-        hours = []
-        # Create hour objects
-        for i in range(len(clusterCenters)):
-            hours.append(Hour(clusterCenters[i], i))
+    def formatLineHoursRegion(self, mediumResLineHours):
+        minX = mediumResLineHours[0].topLeft[0]
+        maxX = mediumResLineHours[0].topLeft[0] + mediumResLineHours[0].width
+        tolerance = int(mediumResLineHours[0].height/2)
+        testPoints = []
+        testLines = []
 
-        # Assign textual hours to an hours Object
-        for lineHour in lineHours:
-            clusterCenter = hoursClustering.predict([[(lineHour.coordinates[1] + lineHour.coordinates[3])/2]])
+        for line in mediumResLineHours:
+            for i in range(len(self.graphicalLines)):
+                yCoordinate = line.topLeft[1]
+                gLine = self.graphicalLines[i]
 
-            for hour in hours:
-                if hour.getClusterCenter() == clusterCenters[clusterCenter[0]]:
-                    hour.addLineHour(lineHour)
+                while (yCoordinate <= line.topLeft[1] + line.height):
 
-        # Add a line with pseudo-text to clusters that have no lines
-        for hour in hours:
-            if hour.getNumberofLineHours() == 0:
-                y = hour.getClusterCenter()
-                defaultHeight = lineHour.coordinates[1] - lineHour.coordinates[3]
-                hour.addLineHour(Line([minX, y, maxX, y - defaultHeight], '?'))
+                    if yCoordinate >= gLine[1] and yCoordinate <= gLine[3]:
+                        #testLines.append(gLine)
+                        intersection = cmtH.yIntersects(yCoordinate, self.graphicalLines[i])
 
-        return hours, hoursClustering
 
-    def sortDays(self, lineDays):
-        xCoordinates = []
-        for i in range(len(lineDays)):
-            xCoordinates.append(lineDays[i].coordinates[0])
+                        if intersection >= maxX and intersection <= maxX + line.height/2:
+                            maxX = intersection
 
-        return [x for _, x in sorted(zip(xCoordinates, lineDays))]
+                        if intersection <= minX and intersection >= minX - line.height/2:
+                            minX = intersection
 
-    def groupCourses(self, courses, lineDays):
-        dayFilteredLines = [[] for i in range(len(lineDays))]
-        dayFilteredCourses = []
+                    yCoordinate += 1
 
-        # Identify each line to a day
-        for i in range(len(courses)):
-            minXDifference = abs(lineDays[0].coordinates[0] - courses[i].coordinates[0])
+        minX -= tolerance
+        maxX += tolerance
+
+        testPoints.append([maxX, 200])
+        testPoints.append([minX, 200])
+        cvH.drawTesttPoints(self.scheduleImg, testPoints)
+        cvH.drawTestLines(self.scheduleImg, testLines)
+
+        return [[self.topLeft[0] + minX, self.topLeft[1]], maxX - minX, self.height]
+
+
+    def extractLowResLineDays(self, possibleLines):
+        corrector = Corrector('French')
+        lowResLineDays = []
+
+        for line in possibleLines:
+            if corrector.correct(line.text):
+                lowResLineDays.append(line)
+
+        return lowResLineDays
+
+    def extractMediumResLineDays(self, lowResLineDays, lrLinesPosition):
+      mediumResLineDays = []
+
+      for line in lowResLineDays:
+          tolerance = line.height
+          if lrLinesPosition > (line.topLeft[1] - tolerance) and lrLinesPosition < (line.topLeft[1] + line.height + tolerance):
+              mediumResLineDays.append(line)
+
+      return mediumResLineDays
+
+    def assignCourseLinesToDay(self, lineCourses, lineDays):
+        dayFilteredLineCourses = [[] for i in range(len(lineDays))]
+
+        for i in range(len(lineCourses)):
+            minXDifference = abs(lineDays[0].topLeft[0] - lineCourses[i].topLeft[0])
             closestDay = 0
 
             # Get minimal X distance
             for j in range(len(lineDays)):
-                xDifference = abs(lineDays[j].coordinates[0] - courses[i].coordinates[0])
+                xDifference = abs(lineDays[j].topLeft[0] - lineCourses[i].topLeft[0])
 
                 if  xDifference < minXDifference:
                     closestDay = j
                     minXDifference = xDifference
 
-            dayFilteredLines[closestDay].append(courses[i])
+            dayFilteredLineCourses[closestDay].append(lineCourses[i])
 
-        # Group lines to form courses
-        for i in range(len(dayFilteredLines)):
-            # Create list of Y-coordinates of lines in a day
-            YList = []
-            min = dayFilteredLines[i][0].coordinates[1]
-            max = dayFilteredLines[i][0].coordinates[1]
+        return dayFilteredLineCourses
 
-            for j in range(len(dayFilteredLines[i])):                     # error check if len = 0
-                YList.append([dayFilteredLines[i][j].coordinates[1]])
+    def clusterCourseLines(self, dayFilteredLineCourses):
+        dayFilteredCourses = []
 
-                if min > dayFilteredLines[i][j].coordinates[1]:
-                    min = dayFilteredLines[i][j].coordinates[1]
-                if max < dayFilteredLines[i][j].coordinates[1]:
-                    max = dayFilteredLines[i][j].coordinates[1]
-
-            # Label each Y-coordinate to a group of Y-coordinates
-            npYList = np.array(YList)
-            bandwidth = estimate_bandwidth(npYList, quantile= 0.38, n_jobs= -1)  # FRAGILE: quantile number heavily impacts clustering result
-                                                                                 # 0.38-0.5 seem to work well with 2-3 classes per day
-            if bandwidth < 10 :                                                  # figure out best treshold
-                bandwidth = 20                                                   # bandwidth = 20 seems to work well for single class days
-                                                                                 # maybe try Affinity propagation instead
-                                                                                 # ref Aff. prop. :https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AffinityPropagation.html#sklearn.cluster.AffinityPropagation
-                                                                                 # Reference MeanShift: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.MeanShift.html#sklearn.cluster.MeanShift.fit
-
-            courseClustering = MeanShift(bandwidth=bandwidth).fit(npYList)
+        for i in range(len(dayFilteredLineCourses)):
+            # Identify groups
+            clusterLabels = self.retrieveClusterLabels(dayFilteredLineCourses[i])
 
             # Assign every line to a previously identified group
-            blockFilteredCourses = [[] for i in range(len(set(courseClustering.labels_)))]
+            blockFilteredCourses = [[] for i in range(len(set(clusterLabels)))]
 
-            for j in range(len(dayFilteredLines[i])):
+            for j in range(len(dayFilteredLineCourses[i])):
                 for k in range(len(blockFilteredCourses)):
-                    if courseClustering.labels_[j] == k:
-                        blockFilteredCourses[k].append(dayFilteredLines[i][j])
+                    if clusterLabels[j] == k:
+                        blockFilteredCourses[k].append(dayFilteredLineCourses[i][j])
                         break
 
             # Assign every group of lines to a Course object
-            academicCourses = []
+            objectCourses = []
 
             for j in range(len(blockFilteredCourses)):
-                academicCourses.append(Course(blockFilteredCourses[j]))
+                if len(blockFilteredCourses[j]) != 0:
+                    objectCourses.append(Course(blockFilteredCourses[j]))
 
             # Trim course list bounds based on graphicalLines data
-            self.trimCourses(academicCourses)
+            self.trimCourses(objectCourses)
 
             # Update the Schedule object course list
-            dayFilteredCourses.append(Day(academicCourses))
+            dayFilteredCourses.append(Day(objectCourses))     # TODO: Give access to day name in Day() constructor, requires some reformating of current function
 
         return dayFilteredCourses
 
-    def trimCourses(self, academicCourses):
-        lineHeightFraction = 2
+    def retrieveClusterLabels(self, dayFilteredLineCourse):
+        # Create list of Y-coordinates of lines in a day
+        YList = []
+        min = dayFilteredLineCourse[0].topLeft[1]
+        max = dayFilteredLineCourse[0].topLeft[1]
+        height = 0
 
-        for i in range(len(academicCourses)):
-            yCoordinates = []
+        for i in range(len(dayFilteredLineCourse)):                     # error check if len = 0
+            YList.append([dayFilteredLineCourse[i].topLeft[1]])
+            height += dayFilteredLineCourse[i].height
 
-            # Correct Firebase bounding boxe issues (Y axis only)
-            for j in range(len(self.graphicalLines)):
-                xCoordinate = academicCourses[i].bounds[0]
+            if min > dayFilteredLineCourse[i].topLeft[1]:
+                min = dayFilteredLineCourse[i].topLeft[1]
+            if max < dayFilteredLineCourse[i].topLeft[1]:
+                max = dayFilteredLineCourse[i].topLeft[1]
 
-                while(xCoordinate <= academicCourses[i].bounds[2]):
-                    if xCoordinate >= self.graphicalLines[j].start[0] and xCoordinate <= self.graphicalLines[j].end[0]:
-                        yCoordinate = self.graphicalLines[j].intersects(xCoordinate)
-                        yCoordinates.append(yCoordinate)
-                        #self.testPoints.append([xCoordinate, yCoordinate])
+        # Label each Y-coordinate to a group of Y-coordinates
+        npYList = np.array(YList)
+        bandwidth = estimate_bandwidth(npYList, quantile= 0.355, n_jobs= -1)  # FRAGILE: quantile number heavily impacts clustering result
+                                                                             # 0.3X-0.5 seem to work well with 2-3 classes per day
+        if bandwidth < 10 :                                                  # figure out best treshold
+            bandwidth = 20                                                   # bandwidth = 20 seems to work well for single class days
+                                                                             # maybe try Affinity propagation instead ?
+                                                                             # ref Aff. prop. :https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AffinityPropagation.html#sklearn.cluster.AffinityPropagation
+                                                                             # Reference MeanShift: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.MeanShift.html#sklearn.cluster.MeanShift.fit
 
-                        # Adjust upper bound (of text)
-                        if  (yCoordinate > (academicCourses[i].bounds[1] - academicCourses[i].averageLineHeight/lineHeightFraction) and
-                             yCoordinate < academicCourses[i].bounds[1]):
-                           academicCourses[i].bounds[1] = yCoordinate
+        # MeanShift tentative
+        #courseClustering = MeanShift(bandwidth=bandwidth).fit(npYList)
 
-                        # Adjust lower bound (of text)
-                        elif (yCoordinate < (academicCourses[i].bounds[3] + academicCourses[i].averageLineHeight/lineHeightFraction) and
-                             yCoordinate > academicCourses[i].bounds[3]):
-                           academicCourses[i].bounds[3] = yCoordinate
+        # DBSCAN Tentative
+        courseClustering = DBSCAN(eps=2*height/len(dayFilteredLineCourse), min_samples=3).fit(npYList)
 
-                    xCoordinate += 1
+
+        return courseClustering.labels_
+
+    def trimCourses(self, objectCourses):
+        for i in range(len(objectCourses)):
+            # Correct Tesserract bounding boxe imprecisions (Y axis only)
+            yCoordinates = self.trimCoursesText(objectCourses[i])
 
             # Find real starting and ending coordinates of courses  (Y axis only)
             yCoordinates.sort()
@@ -234,69 +248,75 @@ class Schedule:
             for j in range(len(yCoordinates)):
                 if j != 0:
                     if not foundUP or not foundLow:
-                        if (yCoordinates[j - 1] < academicCourses[i].bounds[1] and
-                            yCoordinates[j] >=  academicCourses[i].bounds[1] and not foundUP):
-                          academicCourses[i].bounds[1] = yCoordinates[j - 1]
+                        if (yCoordinates[j - 1] < objectCourses[i].topLeft[1] and
+                            yCoordinates[j] >=  objectCourses[i].topLeft[1] and not foundUP):
+                          objectCourses[i].height += objectCourses[i].topLeft[1] - yCoordinates[j - 1]
+                          objectCourses[i].topLeft[1] = yCoordinates[j - 1]
                           foundUP = True
-                        if(yCoordinates[j - 1] <= academicCourses[i].bounds[3] and
-                            yCoordinates[j] >  academicCourses[i].bounds[3] and not foundLow):
-                          academicCourses[i].bounds[3] = yCoordinates[j]
+                        if(yCoordinates[j - 1] <= objectCourses[i].topLeft[1] + objectCourses[i].height and
+                            yCoordinates[j] >  objectCourses[i].topLeft[1] + objectCourses[i].height and not foundLow):
+                          objectCourses[i].height = yCoordinates[j] - objectCourses[i].topLeft[1]
                           foundLow = True
                     else:
                         break
 
-    def assignHoursToCourses(self, days, hours, hoursClustering):
-        for day in days:
+            #TESTING
+
+            self.testPoints.append(objectCourses[i].topLeft)
+            self.testPoints.append([objectCourses[i].topLeft[0]+objectCourses[i].width,objectCourses[i].topLeft[1]+objectCourses[i].height])
+
+    def trimCoursesText(self, objectCourse):
+        yCoordinates = []
+        lineHeightFraction = 2
+
+        for i in range(len(self.graphicalLines)):
+            xCoordinate = objectCourse.topLeft[0]
+
+            while(xCoordinate <= objectCourse.topLeft[0] + objectCourse.width):
+                if xCoordinate >= self.graphicalLines[i][0] and xCoordinate <= self.graphicalLines[i][2]:
+                    yCoordinate = cmtH.xIntersects(xCoordinate, self.graphicalLines[i])
+                    yCoordinates.append(yCoordinate)
+                    #self.testPoints.append([xCoordinate, yCoordinate])
+
+                    # Adjust upper bound (of text)
+                    if  (yCoordinate > (objectCourse.topLeft[1] - objectCourse.averageLineHeight/lineHeightFraction) and
+                         yCoordinate < objectCourse.topLeft[1]):
+                       objectCourse.height += objectCourse.topLeft[1] - yCoordinate
+                       objectCourse.topLeft[1] = yCoordinate
+
+                       #self.testPoints.append([xCoordinate, yCoordinate])
+
+                    # Adjust lower bound (of text)
+                    if (yCoordinate < (objectCourse.topLeft[1] + objectCourse.height + objectCourse.averageLineHeight/lineHeightFraction) and
+                         yCoordinate > objectCourse.topLeft[1] + objectCourse.height):
+                       objectCourse.height = yCoordinate - objectCourse.topLeft[1]
+
+                xCoordinate += 1
+
+
+
+        return yCoordinates
+
+    def assignTimeToObjectCourses(self, highResLineHours, daySortedObjectCourses):
+        for day in daySortedObjectCourses:
             for course in day.courses:
-                topBoundCluster = hoursClustering.predict([[course.bounds[1]]])
-                lowBoundCluster = hoursClustering.predict([[course.bounds[3]]])
-                foundTop = False
-                foundLow = False
+                topDifference = abs((course.topLeft[1]) - (highResLineHours[0].topLeft[1] + highResLineHours[0].height/2))
+                botDifference = abs((course.topLeft[1] + course.height) - (highResLineHours[0].topLeft[1] + highResLineHours[0].height/2))
+                startTime = highResLineHours[0]
+                endTime = highResLineHours[0]
 
-                print('------------------')
-                for hour in hours:
-                    if not foundTop or not foundLow:
-                        if hour.getClusterCenter() == hoursClustering.cluster_centers_[topBoundCluster[0]] and not foundTop:
-                            course.setStartHour(hour)
-                            foundTop = True
+                for hour in highResLineHours:
+                    currentTopDifference = abs((course.topLeft[1]) - (hour.topLeft[1] + hour.height/2))
+                    currentBotDifference = abs((course.topLeft[1] + course.height) - (hour.topLeft[1] + hour.height/2))
 
-                            string = ''
-                            for line in hour.lineHours:
-                                string = string + line.text
-                            print('Starts at: ' + string)
+                    if currentTopDifference <= topDifference:
+                        topDifference = currentTopDifference
+                        startTime = hour
+                    if currentBotDifference <= botDifference:
+                        botDifference = currentBotDifference
+                        endTime = hour
 
-                        if hour.getClusterCenter() == hoursClustering.cluster_centers_[lowBoundCluster[0]] and not foundLow:
-                            course.setEndHour(hour)
-                            foundLow = True
+                course.setStartTime(startTime.text)
+                course.setEndTime(endTime.text)
 
-                            string = ''
-                            for line in hour.lineHours:
-                                string = string + line.text
-                            print('Ends at: ' + string)
-
-        return days
-
-    @staticmethod
-    def findScheduleBounds(fileName):
-        im = cv.imread(fileName)
-        imgray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
-
-        edges = cv.Canny(imgray,50,150,apertureSize = 3)
-        contours, hierarchy = cv.findContours(edges, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
-
-        contours = sorted(contours, key=cv.contourArea, reverse=True)
-        polygon = contours[0]                                                   # FRAGILE: error check to make sure 0 is fine
-
-        bottom_right, _ = max(enumerate([pt[0][0] + pt[0][1] for pt in polygon]), key =operator.itemgetter(1))
-        top_left, _ = min(enumerate([pt[0][0] + pt[0][1] for pt in polygon]), key =operator.itemgetter(1))
-        bottom_left, _ = min(enumerate([pt[0][0] - pt[0][1] for pt in polygon]), key =operator.itemgetter(1))
-        top_right, _ = max(enumerate([pt[0][0] - pt[0][1] for pt in polygon]), key =operator.itemgetter(1))
-
-        return Schedule(polygon[top_left][0], polygon[top_right][0],polygon[bottom_right][0], polygon[bottom_left][0])
-
-        #cv.circle(im, (polygon[top_left][0][0],polygon[top_left][0][1]), 5,(238,255,0), -1)
-        #cv.circle(im, (polygon[top_right][0][0],polygon[top_right][0][1]), 5,(238,255,0), -1)
-        #cv.circle(im, (polygon[bottom_right][0][0],polygon[bottom_right][0][1]), 5,(238,255,0), -1)
-        #cv.circle(im, (polygon[bottom_left][0][0],polygon[bottom_left][0][1]), 5,(238,255,0), -1)
-
-        #cv.imwrite(fileName,im)
+# 22 270 27 874
