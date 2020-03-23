@@ -1,11 +1,13 @@
 import flask
+import Helpers.OpenCVHelpers as cvH
+
+
 from flask import request
-from ImageData import ImageInfo
-from ServerOCR.OCR import OCR
+from ScheduleAnalysis.Schedule import Schedule
 
 app = flask.Flask(__name__)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/test', methods=['GET', 'POST'])
 def handle_request():
     if request.method == 'POST':
         #handle post requests with files
@@ -15,7 +17,9 @@ def handle_request():
         imageFile.save(imageFileName)
         print('hello')
         # Hold extracted data
-        imageInfo = ImageInfo(request.form['coordinates'], request.form['linesText'], imageFileName)
+        topLeft, width, height = cvH.findScheduleBounds(imageFileName)
+        schedule = Schedule(imageFileName, topLeft, width, height)
+
 
         # handle post requests with {'key' : 'value'}
         return "Post request handled by server succesfully."
