@@ -7,7 +7,7 @@ from ScheduleAnalysis.Schedule import Schedule
 
 app = flask.Flask(__name__)
 
-@app.route('/test', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def handle_request():
     if request.method == 'POST':
         #handle post requests with files
