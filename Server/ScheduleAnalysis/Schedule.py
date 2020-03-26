@@ -17,7 +17,7 @@ class Schedule:
         self.textLines = self.extractTextLines(self.topLeft, self.width, self.height, 1)
         self.graphicalLines = self.extractGraphicalLines(self.topLeft, self.width, self.height, 1)
         self.testPoints = []
-        self.initiateAnalysis()
+        self.days = self.initiateAnalysis()
 
     def extractTextLines(self, topLeft, width, height, test, config=None):
         scheduleImg = cvH.cropImage(self.fileName, topLeft, width, height, test)
@@ -40,11 +40,6 @@ class Schedule:
         # Applying tesseract to hours column for 'better' results ||| FRAGILE: result isnt improved, find a way to run Tes. on individual hour squares
         highResLineHours = cmtH.sortLineList(self.extractTextLines(lineHoursRegion[0], lineHoursRegion[1], lineHoursRegion[2], 2, '6'), 'y')
         nonHours = cmtH.stripList(self.textLines, highResLineHours) # simplify further operations
-
-
-        #print(nonHours)
-        #for line in nonHours:
-            #print(line.text)
 
         # Days
         lowResLineDays = self.extractLowResLineDays(nonHours)
@@ -71,6 +66,8 @@ class Schedule:
                 print('++++++')
                 for line in course.lineList:
                     print(line.text)
+
+        return daySortedObjectCourses
 
     def extractLowResLineHours(self):
         lowResLineHours = []

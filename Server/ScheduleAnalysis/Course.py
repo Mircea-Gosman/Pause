@@ -1,6 +1,7 @@
 class Course:
     def __init__(self, lineList):
         self.lineList = lineList
+        self.text = self.storeText(lineList)
 
         self.computeBounds(lineList)
 
@@ -32,6 +33,15 @@ class Course:
         self.width = rightBound - leftBound
         self.height = lowerBound - upperBound
         self.averageLineHeight = int(totalLineHeight/len(lineList))
+
+# Database storage functions
+    def storeText(self, lineList):
+        text = ''
+
+        for line in lineList:
+            text += line.text
+
+        return text
 
     def setStartTime(self, time):
         self.startTime = time
