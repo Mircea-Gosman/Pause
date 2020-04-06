@@ -3,37 +3,28 @@ import Helpers.OpenCVHelpers as cvH
 
 from flask import request
 from Database.Database import db_session
-from Database.StoreAccess import createUser, updateStore, queryStore
+from Database.StoreAccess import auth, importSchedule
 from flask_sqlalchemy import SQLAlchemy
 from ScheduleAnalysis.Schedule import Schedule
 
 app = flask.Flask(__name__)
 
-@app.route('/test', methods=['GET', 'POST'])
-def handle_request():
-    # Greet
-    print('Welcome.')
+@app.route('/auth', methods=['GET', 'POST'])
+def authenticateUser():
+    if request.method == 'POST':
+        print('Authenticating.')
+        return auth(request.form['key'])
+    else:
+        return "Route not fit for Get requests."
 
+@app.route('/schedule', methods=['GET', 'POST'])
+def handle_request():
     # Handle request
     if request.method == 'POST':
-        # Check if new user
-        #if request.form['id'] == 'new':
-        if True:
-            createUser(analyseSchedule())
-            return "New user succesfully registered in Database."
-        else:
-            # Check if user is in database
-            if userInDatabase(request.form['id']):
-                # if request.form['update'] == 'true':
-                updateStore(request.form)
-                # elif request.form['read'] == 'true':
-                # queryStore(request.form)
-                return "Recurring user database access validated."
-            else:
-                return "Invalid user database access attempt."
-
+        print('Importing Schedule.')
+        return importSchedule(request.form['key'], analyseSchedule())
     else :
-        return "Get request handled by server succesfully."
+        return "Route not fit for Get requests."
 
 # Stop database sessions
 @app.teardown_appcontext

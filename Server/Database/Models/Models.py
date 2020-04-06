@@ -5,6 +5,7 @@ from Database.Database import Base  # Remove Database. when instantiating databa
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
+    key = Column(Integer, nullable=False, unique=True)
     days = relationship('Day', backref='user', lazy=True)
 
 class Day(Base):
