@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import '../../Services/LocationService.dart';
 
 
+import 'package:pause_v1/user/schedule/Day.dart';
+import 'package:pause_v1/user/schedule/Course.dart';
+
 // Profile page buttons set
 class ProfileOptions extends StatelessWidget{
   @override
@@ -21,8 +24,8 @@ class ProfileOptions extends StatelessWidget{
             textColor: Colors.white,
             shape: CircleBorder(),
             onPressed: () {
-
               Provider.of<Server>(context, listen: false).analyseSchedule();
+
               // TODO: Show additional dialogs, ie. schedule adjustments, etc.
             },
             child: new Icon(Icons.add, size: 115),

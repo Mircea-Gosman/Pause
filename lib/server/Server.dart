@@ -16,28 +16,14 @@ class Server {
   Server(this.user);
 
   // Authentication
-  Future<String> auth() async{
+  Future<bool> auth() async{
     final postResponse = await http.post(url + 'auth', body: {'key' : user.key});
 
-    switch(postResponse.statusCode){
-      case 200:
-        directEntryFlow(postResponse);
-        break;
-      case 400: // TODO: Create corresponding exception
-      case 401: // TODO: Create corresponding exception
-      case 403: // TODO: Create corresponding exception
-      case 500: // TODO: Create corresponding exception
-      default:  // TODO: Create corresponding exception
-        return 'error';
-    }
-
-
+    return handleResponse(postResponse.statusCode, finishAuth, postResponse);
   }
 
   // On app entry flow
-  void directEntryFlow(http.Response postResponse){
-    final userStatus = JSON.jsonDecode(postResponse.body);
-
+  void finishAuth(userStatus){
     // Update user information
     user.logIn(userStatus);
 
@@ -47,8 +33,9 @@ class Server {
       print('NewUser!');
     }
 
+    // Log user login
+    print('User successfully Logged in: ' + user.isLoggedIn.toString());
   }
-
 
   // Schedule Analysis
   Future<void> analyseSchedule() async {
@@ -60,7 +47,7 @@ class Server {
     // Make Multipart request to send file and text
     final mimeTypeData = lookupMimeType(imageFile.path, headerBytes: [0xFF, 0xD8]).split('/');
 
-    http.MultipartRequest requestFile = http.MultipartRequest('POST', Uri.parse(url + 'schedule'));
+    http.MultipartRequest requestFile = http.MultipartRequest('POST', Uri.parse(url + 'importSchedule'));
     http.MultipartFile multipartFile = await http.MultipartFile.fromPath('Schedule', imageFile.path, contentType : MediaType(mimeTypeData[0], mimeTypeData[1]));
 
     requestFile.fields['key'] = user.key;
@@ -70,7 +57,53 @@ class Server {
     final streamedResponse = await requestFile.send();
     final fileResponse = await http.Response.fromStream(streamedResponse);
 
-    print(fileResponse.body);
+    return handleResponse(fileResponse.statusCode, finishAnalyseSchedule, fileResponse);
+  }
+
+  // Add schedule to user
+  void finishAnalyseSchedule(schedule){
+    user.setSchedule(schedule);
+
+    // Log schedule import
+    print('Schedule successfully imported: ' + (user.schedule != null).toString());
+  }
+
+  Future<void> updateSchedule() async {
+    // Encode user object
+    String encodedUser = JSON.jsonEncode(user);
+
+    // Send to server for update.
+    final postResponse = await http.post(url + 'updateSchedule', body: {'user' : encodedUser});
+
+    return handleResponse(postResponse.statusCode, finishUpdateSchedule, postResponse);
+  }
+
+  // Log schedule update
+  void finishUpdateSchedule(databaseStatus){
+    print('Schedule successfully updated: ' + databaseStatus['hasUpdated'].toString());
+  }
+
+  bool handleResponse(int responseStatusCode , Function onSuccess, http.Response postResponse){
+    final responseContent = JSON.jsonDecode(postResponse.body);
+    bool success = false;
+
+    print("ReponseContent:");
+    print(responseContent);
+
+    switch(responseStatusCode){
+      case 200:
+        onSuccess(responseContent);
+        success = true;
+        break;
+      case 400: // TODO: Create corresponding exception
+      case 401: // TODO: Create corresponding exception
+      case 403: // TODO: Create corresponding exception
+      case 500: // TODO: Create corresponding exception
+      default:  // TODO: Create corresponding exception
+
+    }
+
+    return success;
   }
 
 }

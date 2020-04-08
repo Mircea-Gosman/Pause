@@ -15,7 +15,7 @@ class Pause extends StatelessWidget {
   Pause({Key key, @required this.server}) : super(key: key);
 
 
-  // This widget is the root of your application.
+  // This widget is the root of the application.
   @override
   Widget build(BuildContext context) {
     // Block Screen orientation in whole app

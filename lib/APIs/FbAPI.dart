@@ -6,6 +6,7 @@ import 'dart:convert' as JSON;
 import 'package:pause_v1/server/Server.dart';
 
 class FbAPI {
+
   static Future<void> loginToFB(Server server) async{
     final facebookLogin = FacebookLogin();
     final result = await facebookLogin.logIn(['user_friends']);
