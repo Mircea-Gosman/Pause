@@ -214,7 +214,7 @@ class Schedule:
                 max = dayFilteredLineCourse[i].topLeft[1]
 
         # Label each Y-coordinate to a group of Y-coordinates
-        npYList = np.array(YList)
+        npYList = YList# np.array(YList)
         bandwidth = estimate_bandwidth(npYList, quantile= 0.355, n_jobs= -1)  # FRAGILE: quantile number heavily impacts clustering result
                                                                              # 0.3X-0.5 seem to work well with 2-3 classes per day
         if bandwidth < 10 :                                                  # figure out best treshold
