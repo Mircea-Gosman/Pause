@@ -21,7 +21,10 @@ class FbAPI {
         break;
       case FacebookLoginStatus.error:
       //TODO: Show appropriate error message
+        print('authenticating');
         break;
+      default:
+        print('FacebookLogInError');
     }
   }
 
@@ -31,11 +34,15 @@ class FbAPI {
     final profile = JSON.jsonDecode(graphResponse.body);
     final profilePictureURL = profile['picture']['data']['url']; // Format of picture obj.: {data: {height: 50, is_silhouette: false, url: https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=2244735515835110&height=50&width=50&ext=1585085593&hash=AeT70MYhWvAdn6ua, width: 50}}
     final friendList = profile['friends']['data'];               // Format of friends obj.: {data: [], summary: {total_count: 216}} ;; it only includes friends that use the app & who give permission
+    // [{name: Mircea Gosman, id: 2244735515835110}]
+    //friendList[i]['id'];
+    print('Friends:');
+    print(friendList);
 
     server.user.key = profile['id'];
     server.user.profilePictureURL = profilePictureURL; //TODO: Store the picture locally
-    // TODO: Friend list should be an event and should be in separate method
-
+    server.user.setFriendList(friendList, 'fb');
+    // TODO: Configure server-side webhooks for facebook native post-login friend List updates.
     await server.auth();
   }
 

@@ -5,9 +5,6 @@ import 'package:provider/provider.dart';
 import '../../Services/LocationService.dart';
 
 
-import 'package:pause_v1/user/schedule/Day.dart';
-import 'package:pause_v1/user/schedule/Course.dart';
-
 // Profile page buttons set
 class ProfileOptions extends StatelessWidget{
   @override

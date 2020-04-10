@@ -5,12 +5,16 @@ class User {
   String profilePictureURL;
   bool isNew;
   bool isLoggedIn = false;
+  List<String> friendList;
   Schedule schedule;
 
-  User();
+  User(){
+    this.friendList = [];
+  }
 
   void logIn(userStatus) {
     this.isLoggedIn = true;
+    //this.isNew = userStatus['isNew'];
     this.isNew = userStatus['isNew'];
   }
 
@@ -25,6 +29,22 @@ class User {
 
   void setSchedule (schedule) {
     this.schedule = Schedule(schedule);
+  }
+
+  void setFriendList (List friendList, String provider) {
+    String identifier = 'id'; // Facebook by default
+
+    if (provider == 'server') {  // Server terminology is different
+      identifier = 'key';
+    }
+
+    // Reset friend list
+    this.friendList = [];
+
+    for (dynamic friend in friendList){
+      this.friendList.add(friend[identifier].toString());
+    }
+
   }
 
 }

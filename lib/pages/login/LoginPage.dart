@@ -23,8 +23,18 @@ class LoginPage extends StatelessWidget {
               ),
               textColor: Colors.white,
               onPressed: () {
-                FbAPI.loginToFB(Provider.of<Server>(context, listen: false));
-                Navigator.pushNamed(context, '/Home');
+                Server server = Provider.of<Server>(context, listen: false);
+                FbAPI.loginToFB(server);
+
+                // Register flow
+                if (server.user.isNew) {
+                  // TODO: Create troughout the app new-user tips
+                  Navigator.pushNamed(context, '/Profile');
+                  print('NewUser!');
+                } else {
+                  Navigator.pushNamed(context, '/Home');
+                }
+
               },
               child: Text('Login with Facebook', style: TextStyle(fontSize: 20)),
             ),

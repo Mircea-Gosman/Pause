@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'dart:io';
@@ -12,12 +14,13 @@ import '../Services/ImagePickerService.dart';
 class Server {
   String url = 'http://192.168.1.4:5000/'; // 10.0.2.2 [school_emulator] or 10.150.139.93 [school_real_phone] or 192.168.1.4 [home]
   User user;
+  Timer FriendListTimer; // use this to close the timer.
 
   Server(this.user);
 
   // Authentication
   Future<bool> auth() async{
-    final postResponse = await http.post(url + 'auth', body: {'key' : user.key});
+    final postResponse = await http.post(url + 'auth', body: {'key' : user.key, 'friendList' : JSON.jsonEncode(user.friendList)});
 
     return handleResponse(postResponse.statusCode, finishAuth, postResponse);
   }
@@ -27,18 +30,28 @@ class Server {
     // Update user information
     user.logIn(userStatus);
 
-    // Register flow
-    if (userStatus['isNew']) {
-      // TODO: Activate new-user tips and go to Profile page
-      print('NewUser!');
-    }
+    // Listen for server side friend list updates
+    Timer.periodic(Duration(seconds: 10), (timer) {
+      requestFriendListUpdate();
+      FriendListTimer = timer;
+    });
 
     // Log user login
     print('User successfully Logged in: ' + user.isLoggedIn.toString());
   }
 
+  Future<bool> requestFriendListUpdate() async {
+    final postResponse = await http.post(url + 'downloadFriends', body: {'key' : user.key, 'friendListLength' : JSON.jsonEncode(user.friendList.length)});
+
+    return handleResponse(postResponse.statusCode, finishRequestFriendListUpdate, postResponse);
+  }
+
+  void finishRequestFriendListUpdate(friendListUpdate){
+    user.setFriendList(friendListUpdate['friendList'], 'server');
+  }
+
   // Schedule Analysis
-  Future<void> analyseSchedule() async {
+  Future<bool> analyseSchedule() async {
     File imageFile = await ImagePickerService.pickImage();
 
     // Make standard get request
@@ -68,7 +81,7 @@ class Server {
     print('Schedule successfully imported: ' + (user.schedule != null).toString());
   }
 
-  Future<void> updateSchedule() async {
+  Future<bool> updateSchedule() async {
     // Encode user object
     String encodedUser = JSON.jsonEncode(user);
 
@@ -86,9 +99,6 @@ class Server {
   bool handleResponse(int responseStatusCode , Function onSuccess, http.Response postResponse){
     final responseContent = JSON.jsonDecode(postResponse.body);
     bool success = false;
-
-    print("ReponseContent:");
-    print(responseContent);
 
     switch(responseStatusCode){
       case 200:
