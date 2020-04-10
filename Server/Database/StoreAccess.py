@@ -1,11 +1,10 @@
 import json
-import pickle
 
 from Database.Database import db_session
 from Database.Models.Models import User, Day, Course
 from Helpers.JSONEncoder import ScheduleEncoder
 
-def auth(key):
+def auth(key, friendList):
     isNew =  False
 
     if User.query.filter_by(key=key).first() is None:
@@ -13,6 +12,14 @@ def auth(key):
         db_session.add(user)
         db_session.commit()
         isNew = True
+
+        # Create user friendList
+        friendKeyList = json.loads(friendList)
+
+        for friendKey in friendKeyList:
+            # Add friend only if he is in database
+            if not (User.query.filter_by(key=friendKey).first() is None):
+                establishFriendConnection(key, friendKey)
 
     return json.dumps({'isNew' : isNew})
 
@@ -39,7 +46,6 @@ def importSchedule(key, schedule):
         db_session.commit()
 
         return ScheduleEncoder().encode(schedule)
-
 
 def updateSchedule(clientUser):
     clientUser = json.loads(clientUser)
@@ -75,6 +81,48 @@ def updateSchedule(clientUser):
 
     return json.dumps({'hasUpdated' : hasUpdated})
 
+def establishFriendConnection(key1, key2):
+    # Check for existing connection
+    user1 = User.query.filter_by(key=key1).first()
+    user2 = User.query.filter_by(key=key2).first()
+
+    connection1Exists = False
+    connection2Exists = False
+
+    for friend in user1.friends:
+        if friend.id ==  user2.id:
+            connection1Exists = True
+            break
+
+    for friend in user2.friends:
+        if friend.id ==  user1.id:
+            connection2Exists = True
+            break
+
+    # Add a connection
+    if not connection1Exists:
+        user1.friends.append(user2)
+        db_session.commit()
+    if not connection2Exists:
+        user2.friends.append(user1)
+        db_session.commit()
+
+def notifyFriendsUpdate(key, friendListLength):
+    clientFriends = []
+    user = User.query.filter_by(key=key).first()
+
+    if not (user is None):
+        if len(user.friends) != friendListLength:
+            for friend in user.friends:
+                clientFriends.append({'key' : friend.key})
+
+    return json.dumps({'friendList' : clientFriends})
+
+
+# TODO: Migrate project to heroku and setup webhooks to Facebook to receive live FB friend list updates.
+# https://developers.facebook.com/docs/graph-api/webhooks/getting-started
+def updateFriendList():
+    print('Friend list live updates not yet available.')
 
 # TODO: Complete query functionality when the client side code supports queries
 def queryStore(form):

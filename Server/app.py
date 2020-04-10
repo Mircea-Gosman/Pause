@@ -3,7 +3,7 @@ import Helpers.OpenCVHelpers as cvH
 
 from flask import request
 from Database.Database import db_session
-from Database.StoreAccess import auth, importSchedule, updateSchedule
+from Database.StoreAccess import auth, importSchedule, updateSchedule, notifyFriendsUpdate
 from flask_sqlalchemy import SQLAlchemy
 from ScheduleAnalysis.Schedule import Schedule
 
@@ -13,7 +13,7 @@ app = flask.Flask(__name__)
 def authenticateUser():
     if request.method == 'POST':
         print('Authenticating.')
-        return auth(request.form['key'])
+        return auth(request.form['key'], request.form['friendList'])
     else:
         return "Route not fit for Get requests."
 
@@ -32,6 +32,14 @@ def updateDatabaseSchedule():
     if request.method == 'POST':
         print('Updating Schedule.')
         return updateSchedule(request.form['user'])
+    else :
+        return "Route not fit for Get requests."
+
+@app.route('/downloadFriends', methods=['GET', 'POST'])
+def downloadFriends():
+    if request.method == 'POST':
+        print('Looking for friend list updates.')
+        return notifyFriendsUpdate(request.form['key'], request.form['friendListLength'])
     else :
         return "Route not fit for Get requests."
 
@@ -54,4 +62,9 @@ def analyseSchedule():
     return schedule
 
 # Start the server (must be after all routes)
-app.run(host="0.0.0.0", port=5000, debug=True)
+app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
+
+# Implementing SSE if ever needed :: No use found bc broadcast is made to all subs; currently using client long polling instead.
+# https://medium.com/code-zen/python-generator-and-html-server-sent-events-3cdf14140e56
+# https://stackoverflow.com/questions/12232304/how-to-implement-server-push-in-flask-framework
+# https://pub.dev/documentation/eventsource/latest/

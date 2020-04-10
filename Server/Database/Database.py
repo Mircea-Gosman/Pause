@@ -25,3 +25,10 @@ def init_db():
     # you will have to import them first before calling init_db()
     import Models.Models
     Base.metadata.create_all(bind=engine)
+
+# Remove Database. prefix on Database file import in Models.py
+# From terminal in Database folder do:
+# from Database import init_db
+# init_db()
+# exit()
+# Put back Database. prefix on Database File import in Models.py
