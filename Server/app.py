@@ -3,7 +3,7 @@ import Helpers.OpenCVHelpers as cvH
 
 from flask import request
 from Database.Database import db_session
-from Database.StoreAccess import auth, importSchedule
+from Database.StoreAccess import auth, importSchedule, updateSchedule
 from flask_sqlalchemy import SQLAlchemy
 from ScheduleAnalysis.Schedule import Schedule
 
@@ -17,12 +17,21 @@ def authenticateUser():
     else:
         return "Route not fit for Get requests."
 
-@app.route('/schedule', methods=['GET', 'POST'])
-def handle_request():
+@app.route('/importSchedule', methods=['GET', 'POST'])
+def importDatabaseSchedule():
     # Handle request
     if request.method == 'POST':
         print('Importing Schedule.')
         return importSchedule(request.form['key'], analyseSchedule())
+    else :
+        return "Route not fit for Get requests."
+
+@app.route('/updateSchedule', methods=['GET', 'POST'])
+def updateDatabaseSchedule():
+    # Handle request
+    if request.method == 'POST':
+        print('Updating Schedule.')
+        return updateSchedule(request.form['user'])
     else :
         return "Route not fit for Get requests."
 
@@ -42,7 +51,7 @@ def analyseSchedule():
     topLeft, width, height = cvH.findScheduleBounds(imageFileName)
     schedule = Schedule(imageFileName, topLeft, width, height)
 
-    return schedule.days
+    return schedule
 
 # Start the server (must be after all routes)
 app.run(host="0.0.0.0", port=5000, debug=True)
