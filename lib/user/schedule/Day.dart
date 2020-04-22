@@ -5,7 +5,7 @@ class Day {
   List<Course> _courses;
 
   Day(serverDay) {
-    // _title = serverDay['title']; TODO: Enable this option on server
+    _title = serverDay['title'];
     _courses = [];
 
     for (dynamic course in serverDay['courses']) {

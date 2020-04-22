@@ -96,6 +96,14 @@ class Server {
     print('Schedule successfully updated: ' + databaseStatus['hasUpdated'].toString());
   }
 
+  // Request schedule information from Database
+  Future<bool>  querySchedule() async {
+    final postResponse = await http.post(url + 'querySchedule', body: {'key' : user.key});
+
+    return handleResponse(postResponse.statusCode, finishAnalyseSchedule, postResponse); // Change finishAnalyseSchedule for something customized if ever needed, it suits for now
+  }
+
+
   bool handleResponse(int responseStatusCode , Function onSuccess, http.Response postResponse){
     final responseContent = JSON.jsonDecode(postResponse.body);
     bool success = false;
