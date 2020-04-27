@@ -45,6 +45,9 @@ Cela permet de rogner chacune des cellues afin d'améliorer le résultat du proc
 | ------------- | ------------- |
 | <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/hourCell.jpg" width="100">  | <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/courseCell.jpg" width="100">  |
 
+### OCR
+L'outil de OCR utilisé est [Tesseract](https://tesseract-ocr.github.io), l'adaptation [py_tesseract](https://pypi.org/project/pytesseract/).
+
 ### Résultat final
 Le processus d'analyse d'image précédemment documenté permet et des résultats de bonne qualité du OCR, et l'obtention des coordonnées limites des cellules. Placé dans une base de données SQL-Lite, le résultat du jumelage entre les cours et leurs heure de début et d'arrivé ressemble à ceci:
 The previously documented process allows both for decent OCR results and accurate positionning of the schedule's cells. 
