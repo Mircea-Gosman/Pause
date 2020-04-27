@@ -2,8 +2,6 @@
 
 *[Version française](https://github.com/Mircea-Gosman/pause_v1/blob/master/README_FR.md)*
 
-End of Cegep integration project. 
-
 ## Image analysis process
 Since the starting image is meant to be a screenshot from the user's screen, custom image segmentation is mandatory to obtain decent acceptable OCR results. 
 
