@@ -1,6 +1,6 @@
 # Pause (Application android d'analyse d'horaire en format image sous serveur Flask)
 
-*[English Version Here](https://github.com/Mircea-Gosman/pause_v1/blob/master/README.md)*
+*[English Version](https://github.com/Mircea-Gosman/pause_v1/blob/master/README.md)*
 
 ## Processus d'analyse d'images
 L'image de départ étant une capture d'écran, la première étape est de segmenter l'image.
