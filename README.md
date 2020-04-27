@@ -1,6 +1,6 @@
 # Pause (Flask based schedule image analysis with android mobile app client)
 
-*[Version française: link to come:]*
+*[Version française](https://github.com/Mircea-Gosman/pause_v1/blob/master/README_FR.md)*
 
 End of Cegep integration project. 
 
@@ -47,16 +47,19 @@ This correctly outlines the schedule's features and allows for cropping of every
 | ------------- | ------------- |
 | <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/hourCell.jpg" width="100">  | <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/courseCell.jpg" width="100">  |
 
+### OCR
+The OCR engine used is [Tesseract](https://tesseract-ocr.github.io), the [py_tesseract](https://pypi.org/project/pytesseract/) adaptation.
+
 ### End result 
 The previously documented process allows both for decent OCR results and accurate positionning of the schedule's cells. 
 Placed in a, SQL-Lite database, the ensued matching of courses to their start and end times appears as follows:
 
-| Time Cell | Course Cell |
+| Days' Table | Courses' Table |
 | ------------- | ------------- |
 | <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/daysDB.png" width="500">  | <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/coursesDB.png" width="500">  |
 
 ## Server & Database
-The server is based on Flask and the database code uses [Flask_Sql_Alchemy]() to communicate with the server. 
+The server is based on Flask and the database code uses [Flask_Sql_Alchemy](https://flask-sqlalchemy.palletsprojects.com/en/2.x/) to communicate with the server. 
 
 As of now, there is support for:
 * Registering users 
@@ -65,7 +68,7 @@ As of now, there is support for:
 * Updating a schedule in the Database from the client
 
 As of now, there is no support for:
-* Live Facebook friends updates (if the friend connection is made after user registration to the app) (webhooks not setup)
+* Live Facebook friends updates (if the friend connection is made after user registration to the app) ([webhooks](https://developers.facebook.com/docs/graph-api/webhooks/))
 * Between user notification transmission
 * Deleting an user
 * Logging out (relevant if option is implemented in client app, i.e. FB Messenger doesn't)
