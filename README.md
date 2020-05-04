@@ -34,7 +34,7 @@ As the corners correspond to most of the intersections of the schedule's grid's 
 ### Grid Boxes
 Pairs of corners can be paired two by two in order to form boxes. 
 
-| Raw Corners  |
+| Relevant outline |
 | ------------- | 
 | <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/scheduleCells.jpg" width="300">  |
 
