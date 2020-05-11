@@ -76,11 +76,11 @@ En ce moment, le serveur ne peut pas encore:
 ## Client
 En ce moment, le client est muni de:
 * Une page de connexion
+  - sans [Logo]
 * Une page d'accueil
+  - sans [Listes d'amis]
 * Une page de profile
+  - avec [Dialogue de correction d'analyse d'horaire. (sans ajout de cours, ajout/retrait de jours, filtre de correction)]
 
-Une navigation rudimentaire est implémentée. La majorité des fonctions de l'interface utilisateur ne sont pas présentes.
 Le côté client est opérationnel pour l'ensemble des fonctions actuelles du serveur.
 
-Le modèle d'affaire doit être capable de comparer deux horaires à partir des résultats du serveur. 
-(Une fois cela fait, le reste de l'application devrait être basique.)
