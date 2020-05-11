@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'user/User.dart';
 import 'server/Server.dart';
 import 'pages/Routes.dart';
+import 'services/screenSize.dart';
 
 void main() => runApp(Pause(server: Server(User())));
 
@@ -34,7 +35,7 @@ class Pause extends StatelessWidget {
         child: MaterialApp(
           title: 'Flutter Demo',
           theme: ThemeData(
-            primarySwatch: Colors.green,
+            primarySwatch: Colors.grey,
           ),
           //home: Login(),
           initialRoute: initialRoute,

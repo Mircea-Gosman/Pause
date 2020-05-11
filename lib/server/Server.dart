@@ -12,9 +12,12 @@ import '../Services/ImagePickerService.dart';
 
 
 class Server {
-  String url = 'http://192.168.1.4:5000/'; // 10.0.2.2 [school_emulator] or 10.150.139.93 [school_real_phone] or 192.168.1.4 [home]
-  User user;
+  final String url = 'http://192.168.1.3:5000/'; // 10.0.2.2 [school_emulator] or 10.150.139.93 [school_real_phone] or 192.168.1.4 [home]
+  final User user;
+  StreamController<String> finishedOperationStream;
+
   Timer FriendListTimer; // use this to close the timer.
+
 
   Server(this.user);
 
@@ -76,6 +79,9 @@ class Server {
   // Add schedule to user
   void finishAnalyseSchedule(schedule){
     user.setSchedule(schedule);
+
+    // Add finishedEvent to Stream
+    finishedOperationStream.add('AnalyseSchedule');
 
     // Log schedule import
     print('Schedule successfully imported: ' + (user.schedule != null).toString());

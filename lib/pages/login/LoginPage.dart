@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pause_v1/server/Server.dart';
+import 'package:pause_v1/services/screenSize.dart';
 import 'package:provider/provider.dart';
 import '../../APIs/FbAPI.dart';
 
@@ -8,6 +9,12 @@ import '../../APIs/FbAPI.dart';
 class LoginPage extends StatelessWidget {
   @override
   Widget build (BuildContext context) {
+    // Initialize ScreenSize if necessary
+    if(!ScreenSize.initialized) {
+      // ScreenSize
+      ScreenSize().init(context);
+    }
+
     return new Scaffold(
       body: Center(
         child: Column(

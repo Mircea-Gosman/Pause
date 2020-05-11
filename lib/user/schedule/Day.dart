@@ -33,4 +33,11 @@ class Day {
     return _courses;
   }
 
+  String get title {
+    return _title;
+  }
+
+  set courses(List<Course> course) {
+    this.courses = courses;
+  }
 }
