@@ -74,14 +74,15 @@ As of now, there is no support for:
 ## Client
 As of now, the client has:
 * A log-in page 
+  - misses [Logo]
+  - BUG [log in button has to be clicked twice with a delay to navigate to next page]
 * A home page
+  - misses [friend lists]
 * A profile page
+  - has [Schedule correction dialog, without adding courses feature, without add/remove day feature, without consistency checks]
+  - misses [location service integration to schedule algorithm] [Do not disturb feature]
+  - bug [schedule correction dialog button needs to be double clicked]
 
-Basic navigation is implemented. Many/most UI features are not present. 
 The client supports all the server's actual features. 
-
-Its model needs to be able to compare schedules. Once that part is done, the rest of the app is pretty straight forward.
-
-
 
 
