@@ -87,3 +87,8 @@ En ce moment, le client est muni de:
 
 Le côté client est opérationnel pour l'ensemble des fonctions actuelles du serveur.
 
+### Demo: 
+
+| Connextion, navigation et téléversement de l'horaire | Correction de l'horaire |
+| ------------- | ------------- | 
+| <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/UI_1_v1.gif" width="400">  | <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/UI_2_v1.gif" width="400">  |
