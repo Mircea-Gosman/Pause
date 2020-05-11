@@ -77,10 +77,13 @@ En ce moment, le serveur ne peut pas encore:
 En ce moment, le client est muni de:
 * Une page de connexion
   - sans [Logo]
+  - bug [Le bouton de connexion nécessite deux cliques avec un délai d'environ 2 secondes entre chaque clic]
 * Une page d'accueil
   - sans [Listes d'amis]
 * Une page de profile
   - avec [Dialogue de correction d'analyse d'horaire. (sans ajout de cours, ajout/retrait de jours, filtre de correction)]
+  - sans [Intégration de la géolocalisation dans l'algorithme de comparaison d'horaire], Fonction ne pas déranger
+  - bug [Le bouton de début du dialogue de correction nécessite un double clic]
 
 Le côté client est opérationnel pour l'ensemble des fonctions actuelles du serveur.
 
