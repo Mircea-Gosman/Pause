@@ -75,13 +75,13 @@ As of now, there is no support for:
 As of now, the client has:
 * A log-in page 
   - misses [Logo]
-  - BUG [log in button has to be clicked twice with a delay to navigate to next page]
+  - BUG [Log in button has to be clicked twice with a delay to navigate to next page]
 * A home page
-  - misses [friend lists]
+  - misses [Friend lists]
 * A profile page
   - has [Schedule correction dialog, without adding courses feature, without add/remove day feature, without consistency checks]
-  - misses [location service integration to schedule algorithm] [Do not disturb feature]
-  - bug [schedule correction dialog button needs to be double clicked]
+  - misses [Location service integration to schedule algorithm], [Do not disturb feature]
+  - bug [Schedule correction dialog button needs to be double clicked]
 
 The client supports all the server's actual features. 
 
