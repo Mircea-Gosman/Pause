@@ -12,6 +12,7 @@ from Database.StoreAccess import auth, importSchedule, updateSchedule, queryStor
 from flask_sqlalchemy import SQLAlchemy
 from ScheduleAnalysis.Schedule import Schedule
 
+# Flask application 
 app = flask.Flask(__name__)
 
 # Authentication Route
@@ -78,8 +79,3 @@ def analyseSchedule():
 
 # Start the server (must be after all routes)
 app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
-
-# Implementing SSE if ever needed :: No use found bc broadcast is made to all subs; currently using client short polling instead.
-# https://medium.com/code-zen/python-generator-and-html-server-sent-events-3cdf14140e56
-# https://stackoverflow.com/questions/12232304/how-to-implement-server-push-in-flask-framework
-# https://pub.dev/documentation/eventsource/latest/
