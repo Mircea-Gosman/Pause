@@ -76,11 +76,19 @@ En ce moment, le serveur ne peut pas encore:
 ## Client
 En ce moment, le client est muni de:
 * Une page de connexion
+  - sans [Logo]
+  - bug [Le bouton de connexion nécessite deux cliques avec un délai d'environ 2 secondes entre chaque clic]
 * Une page d'accueil
+  - sans [Listes d'amis]
 * Une page de profile
+  - avec [Dialogue de correction d'analyse d'horaire. (sans ajout de cours, ajout/retrait de jours, filtre de correction)]
+  - sans [Intégration de la géolocalisation dans l'algorithme de comparaison d'horaire], Fonction ne pas déranger
+  - bug [Le bouton de début du dialogue de correction nécessite un double clic]
 
-Une navigation rudimentaire est implémentée. La majorité des fonctions de l'interface utilisateur ne sont pas présentes.
 Le côté client est opérationnel pour l'ensemble des fonctions actuelles du serveur.
 
-Le modèle d'affaire doit être capable de comparer deux horaires à partir des résultats du serveur. 
-(Une fois cela fait, le reste de l'application devrait être basique.)
+### Demo: 
+
+| Connextion, navigation et téléversement de l'horaire | Correction de l'horaire |
+| ------------- | ------------- | 
+| <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/UI_1_v1.gif" width="400">  | <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/UI_2_v1.gif" width="400">  |
