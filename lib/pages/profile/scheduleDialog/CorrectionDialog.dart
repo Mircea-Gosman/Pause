@@ -127,7 +127,7 @@ class _CorrectionDialogState extends State<CorrectionDialog> with SingleTickerPr
                     color: Colors.white,
                     size: ScreenSize.unitWidth * 14,
                   ) : Icon(
-                    Icons.arrow_back,
+                    Icons.navigate_before,
                     color: Colors.white,
                     size: ScreenSize.unitWidth * 14,
                   ),
