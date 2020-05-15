@@ -1,3 +1,9 @@
+# -----------------------------------------------------------
+# Application Flask Server Routes
+#
+# 2020 Mircea Gosman, Terrebonne, Canada
+# email mirceagosman@gmail.com
+# -----------------------------------------------------------
 import flask
 
 from flask import request
@@ -8,6 +14,7 @@ from ScheduleAnalysis.Schedule import Schedule
 
 app = flask.Flask(__name__)
 
+# Authentication Route
 @app.route('/auth', methods=['GET', 'POST'])
 def authenticateUser():
     if request.method == 'POST':
@@ -16,6 +23,7 @@ def authenticateUser():
     else:
         return "Route not fit for Get requests."
 
+# Upload schedule from the client's picture into the database
 @app.route('/importSchedule', methods=['GET', 'POST'])
 def importDatabaseSchedule():
     # Handle request
@@ -25,6 +33,7 @@ def importDatabaseSchedule():
     else :
         return "Route not fit for Get requests."
 
+# Upload schedule from the client's data structures into the database
 @app.route('/updateSchedule', methods=['GET', 'POST'])
 def updateDatabaseSchedule():
     # Handle request
@@ -34,6 +43,7 @@ def updateDatabaseSchedule():
     else :
         return "Route not fit for Get requests."
 
+# Download a user's schedule from the database to the client
 @app.route('/querySchedule', methods=['GET', 'POST'])
 def queryDatabaseSchedule():
     if request.method == 'POST':
@@ -42,6 +52,7 @@ def queryDatabaseSchedule():
     else :
         return "Route not fit for Get requests."
 
+# Check if the client's friend list matches the database
 @app.route('/downloadFriends', methods=['GET', 'POST'])
 def downloadFriends():
     if request.method == 'POST':
@@ -61,7 +72,8 @@ def analyseSchedule():
     imageFile = request.files['Schedule']
     imageFileName = 'schedule.'+ request.form['ext']
     imageFile.save(imageFileName)
-
+    
+    # Utilize computer vision to turn the picture into data structures
     return Schedule(imageFileName)
 
 # Start the server (must be after all routes)
