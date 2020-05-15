@@ -1,9 +1,17 @@
+# -----------------------------------------------------------
+# Schedule object for JSON to be sent to client
+#
+# 2020 Mircea Gosman, Terrebonne, Canada
+# email mirceagosman@gmail.com
+# -----------------------------------------------------------
 from ScheduleAnalysis.Day import Day
 from ScheduleAnalysis.Course import Course
 from ScheduleAnalysis.ImageAnalysis import ImageAnalysis
 
 class Schedule:
+    # Initializer 
     def __init__(self, fileName=None, days=None):
+        # Verify initializer source (from picture or database)
         if days is None:
             analyser = ImageAnalysis(fileName)
             days, dayTitles = analyser.initiateAnalysis()
@@ -11,11 +19,16 @@ class Schedule:
         elif fileName is None:
             self.days = days
 
+    # Convert the result of the picture analysis to JSON-able objects 
     def buildObjectsForJson(self, days, dayTitles):
+        # Initialize days array
         self.days = []
-
+        
+        # Add courses to day objects
         for i in range(len(days)):
+            # Initialize courses array
             courses = []
+            # Adopt normalized day name     
             title = self.setDayTitlePrefixes(i)
 
             if len(dayTitles) != 0 and dayTitles[i] != '':
@@ -26,6 +39,7 @@ class Schedule:
 
             self.days.append(Day(title, courses))
 
+    # Normalize day name prefixes 
     def setDayTitlePrefixes(self, i):
         switcher={
                         0:'lun',
