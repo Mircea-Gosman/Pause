@@ -28,18 +28,20 @@ class Schedule:
         for i in range(len(days)):
             # Initialize courses array
             courses = []
-            # Adopt normalized day name     
+            # Adopt default day name     
             title = self.setDayTitlePrefixes(i)
-
+            
+            # Use custom day name if available
             if len(dayTitles) != 0 and dayTitles[i] != '':
                 title = dayTitles[i]
-
+            
+            # Add courses to courses array
             for course in days[i]:
                 courses.append(Course(course[2][0], course[2][1], course[1]))
-
+             
             self.days.append(Day(title, courses))
 
-    # Normalize day name prefixes 
+    # Default day name prefixes 
     def setDayTitlePrefixes(self, i):
         switcher={
                         0:'lun',
