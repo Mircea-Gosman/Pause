@@ -3,7 +3,7 @@
 *[Version française](https://github.com/Mircea-Gosman/pause_v1/blob/master/README_FR.md)*
 
 ## Abstract
-The transition from high school to CEGEP is not always an easy one. Among challenges students face, there is the hardship of matching their friends' free time to their own in order to enjoy eachother's company. At the moment, *Omnivox*, by Skytech Communications, supplies all CEGEP students from Québéc with a proprietary version of their schedule. The current project aims to utilize screenshots of these schedules in order to connect students with others among their Facebook friends during shared free time. 
+The transition from high school to CEGEP is not always an easy one. Among challenges students face, there is the hardship of matching their friends' free time to their own in order to enjoy eachother's company. At the moment, *Omnivox*, by Skytech Communications, supplies all CEGEP students from Québec with a proprietary version of their schedule. The current project aims to utilize screenshots of these schedules in order to connect students with others among their Facebook friends during shared free time. 
 
 This project serves as the end of CEGEP integration project for the Computer Science and mathematics program at Collège de Bois-de-Boulogne (February to May 2020).
 
