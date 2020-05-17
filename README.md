@@ -1,8 +1,7 @@
-# Pause 
+<p align='right'><a href='https://github.com/Mircea-Gosman/pause_v1/blob/master/README_FR.md'><i>Version française</i></a></p>
+<h1 align='center'>Pause</h1>
+<h3 align='center'> (Flask hosted schedule image analysis with android mobile app client) </h3>
 
-### (Flask hosted schedule image analysis with android mobile app client)
-
-*[Version française](https://github.com/Mircea-Gosman/pause_v1/blob/master/README_FR.md)*
 
 ## Abstract
 The transition from high school to CEGEP is not always an easy one. Among challenges students face, there is the hardship of matching their friends' free time to their own in order to enjoy eachother's company. At the moment, *Omnivox*, by Skytech Communications, supplies all CEGEP students from Québec with a proprietary version of their schedule. The current project aims to utilize screenshots of these schedules in order to connect students with others among their Facebook friends during shared free time. 
