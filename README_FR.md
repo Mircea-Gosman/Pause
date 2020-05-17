@@ -1,6 +1,8 @@
-# Pause (Application android d'analyse d'horaire en format image sous serveur Flask)
+<p align='right'><a href='https://github.com/Mircea-Gosman/pause_v1/blob/master/README.md'><i>English Version</i></a></p>
+<h1 align='center'>Pause</h1>
+<h3 align='center'> (Application Android d'analyse d'horaire en format image sous serveur Flask) </h3>
 
-*[English Version](https://github.com/Mircea-Gosman/pause_v1/blob/master/README.md)*
+
 
 ## Résumé
 La transition du secondaire vers le Cégep peut sembler ambigüe. Parmi les défis que doivent relever les étudiants, il y a la difficulté de se retrouver entre amis lorsque chacun possède un horaire différent. En ce moment, *Omnivox*, de Skytech Communications, fournit à tous les collègiens québecois un horaire scolaire intrinsèque à une application mobile. Le projet ici présenté a pour but de faire usage de captures d'écran des horaires des usagers afin de connecter les étudiants pendant leurs temps libres communs. 
