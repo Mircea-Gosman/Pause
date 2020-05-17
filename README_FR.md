@@ -73,6 +73,13 @@ En ce moment, le serveur ne peut pas encore:
 * Supprimer un utilisateur
 * Déconnecter un utilisateur (à implémenter si l'application client le souhaite, i.e. FB Messsenger ne permet pas l'option)
 
+## Intégration with Facebook
+L'authentification initiale et les listes d'amis des utilisateurs de l'application proviennent du Graph API de Facebook.
+
+| Tableau de bord du Graph API de Facebook | 
+| ------------- |
+| <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/FB_G_API_Dashboard.png" width="900">  | 
+
 ## Client
 En ce moment, le client est muni de:
 * Une page de connexion
