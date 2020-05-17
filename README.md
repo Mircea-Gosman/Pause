@@ -71,6 +71,13 @@ As of now, there is no support for:
 * Deleting an user
 * Logging out (relevant if option is implemented in client app, i.e. FB Messenger doesn't)
 
+## Integration with Facebook
+The application's authentication process and friend's list come from Facebook's Graph API. 
+
+| Facebook Graph API Dashboard | 
+| ------------- |
+| <img src="https://github.com/Mircea-Gosman/pause_v1/blob/master/Results/FB_G_API_Dashboard.png" width="900">  | 
+
 ## Client
 As of now, the client has:
 * A log-in page 
