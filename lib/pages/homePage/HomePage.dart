@@ -1,20 +1,24 @@
+/**-----------------------------------------------------------
+ * Application homepage
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'package:flutter/material.dart';
 
 import '../profile/ProfileBar.dart';
 
-
-// Central app page
+/// Homepage Parent Widget
 class HomePage extends StatefulWidget {
-  HomePage({Key key, this.title}) : super(key: key);
-
-
-  final String title;
-
+  // Create state
   @override
   _HomePageState createState() => _HomePageState();
 }
 
+/// Homepage State
 class _HomePageState extends State<HomePage> {
+
+  // Build UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(

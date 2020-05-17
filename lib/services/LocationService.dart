@@ -1,11 +1,19 @@
+/**-----------------------------------------------------------
+ * Module allowing to access location data
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'package:location/location.dart';
 
 class LocationService {
 
-  // TODO: If needs arrise, make this into an instance method
+  /// Module call
   static void setLocationAvailable() async{
+    // Location service
     Location location = new Location();
 
+    // Verify availability and permission
     bool _serviceEnabled;
     PermissionStatus _permissionGranted;
 

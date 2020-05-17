@@ -1,10 +1,14 @@
+/**-----------------------------------------------------------
+ * The application's LoginPage
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'package:flutter/material.dart';
 import 'package:pause_v1/server/Server.dart';
 import 'package:pause_v1/services/screenSize.dart';
 import 'package:provider/provider.dart';
 import '../../APIs/FbAPI.dart';
-
-// Login page TODO: Handle return to this page while logged in (i.e. through Android back button press)
 
 class LoginPage extends StatelessWidget {
   @override
@@ -15,17 +19,20 @@ class LoginPage extends StatelessWidget {
       ScreenSize().init(context);
     }
 
+    // Build UI
     return new Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            // Page identifier
             Text(
               'Login Page',
             ),
+            // Login button
             RaisedButton(
               color: Color(0xff3b5998),
-              shape:RoundedRectangleBorder(
+              shape: RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(18.0),
               ),
               textColor: Colors.white,
@@ -37,7 +44,6 @@ class LoginPage extends StatelessWidget {
                 if (server.user.isNew) {
                   // TODO: Create troughout the app new-user tips
                   Navigator.pushNamed(context, '/Profile');
-                  print('NewUser!');
                 } else {
                   Navigator.pushNamed(context, '/Home');
                 }

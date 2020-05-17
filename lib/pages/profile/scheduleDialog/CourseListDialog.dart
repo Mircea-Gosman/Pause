@@ -1,5 +1,9 @@
-import 'dart:async';
-
+/**-----------------------------------------------------------
+ * Scrolling list of widgets representing a day's courses
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pause_v1/pages/profile/scheduleDialog/CourseListDialogStreamHolder.dart';
@@ -9,19 +13,22 @@ import 'package:pause_v1/pages/profile/scheduleDialog/CourseDialog.dart';
 import 'package:pause_v1/user/schedule/Course.dart';
 import 'package:intl/intl.dart';
 
+/// CourseListDialog parent widget
 class CourseListDialog extends StatefulWidget {
-  List<Course> courses;
-  List<CourseDialog> courseWidgets;
+  List<Course> courses;               // List of courses to source from
+  List<CourseDialog> courseWidgets;   // List of widgets to display
 
+  /// Initializer
   CourseListDialog(List<Course> courses){
     this.courses = courses;
     buildCourseListFromUser();
   }
 
+  /// Create state
   @override
   _CourseListDialogState createState() => _CourseListDialogState();
 
-
+  /// Create the widgets from the course list
   void buildCourseListFromUser(){
     courseWidgets = [];
     for(Course course in courses){
@@ -35,47 +42,39 @@ class CourseListDialog extends StatefulWidget {
 
 }
 
-class _CourseListDialogState extends State<CourseListDialog> { // need to be built in state, not in parent
+/// CourseListDialog State
+class _CourseListDialogState extends State<CourseListDialog> {
+  // Map allowing for TimeStamp content updates
   Map reviewedCourse;
 
-  _CourseListDialogState(){
-    // Build course widgets from user courses
-  }
-
-  @override
-  void initState(){
-    super.initState();
-  }
-
-  @override
-  didChangeDependencies(){
-    super.didChangeDependencies();
-  }
-
-
+  /// Build the UI
   @override
   Widget build(BuildContext context) {
+    // Listen to outer. stream to be notified of WidgetCourses removal
     CourseListDialogStreamHolder.of(context).outterCourseStreamController.stream.listen((expiredWidget){
       setState(() {
         widget.courseWidgets = List.from(widget.courseWidgets)..remove(expiredWidget); // ListView will only update if array of reference changes, flutter is based on immutable objects**
         widget.courses.remove(expiredWidget.course);
       });
     });
+
+    // Listen to requestTimestream to be notified of WidgetCourses content updates
     CourseListDialogStreamHolder.of(context).reviewRequestTimeStreamController.stream.listen((sourceWidgetCourse){
       setState(() {
         reviewedCourse = sourceWidgetCourse;
       });
     });
 
+    /// Send notification of course content update
+    /// to corresponding TimeStamp widget
     void reviewCourse(DateTime newTime) {
-      print('reviewedCourse:');
-      print(reviewedCourse['course'].startTime);
-      print('Courses:');
+      // Find reviewed course among courses
       for (Course course in widget.courses) {
-        print(course.startTime);
 
         if (course == reviewedCourse['course']){
           String newTimeString = DateFormat('Hm').format(newTime);
+
+          // Change the course's corresponding timestamp
           if(reviewedCourse['isStart']){
             course.startTime = newTimeString;
           } else {
@@ -89,14 +88,17 @@ class _CourseListDialogState extends State<CourseListDialog> { // need to be bui
       }
     }
 
+    /// Convert time data from String to DateTime
     DateTime initializeDateTime(){
       DateTime datetime = DateTime.now();
       String time = reviewedCourse['course'].startTime;
 
+      // First figure out which timeStamp is being reviewed
       if(!reviewedCourse['isStart']){
         time = reviewedCourse['course'].endTime;
       }
 
+      // Then parse the timeStamp's content
       if(!reviewedCourse['course'].startTime.contains('?')){
         datetime = DateFormat('Hm').parse(time);
       }
@@ -104,10 +106,13 @@ class _CourseListDialogState extends State<CourseListDialog> { // need to be bui
       return datetime;
     }
 
+    /// Build list of child
     List<Widget> buildChildren() {
       List<Widget> builder = [];
 
+      // Check if widget contains courses to display
       if (widget.courseWidgets.isNotEmpty) {
+        // Add list of coursesWidgets
         builder.add(
           Positioned(
             top: ScreenSize.unitHeight * 30,
@@ -128,7 +133,9 @@ class _CourseListDialogState extends State<CourseListDialog> { // need to be bui
           ),
         );
 
+        // Check if a course is being reviewed
         if (reviewedCourse != null) {
+          // Add a timePicker widget to allow the review
           builder.add(
             Stack(
               children: <Widget>[
@@ -180,8 +187,8 @@ class _CourseListDialogState extends State<CourseListDialog> { // need to be bui
             )
           );
         }
-
       } else {
+        // Display placeholder text when widget list is empty.
         builder.add(
           Positioned(
             top: ScreenSize.unitHeight * 45,
@@ -199,6 +206,7 @@ class _CourseListDialogState extends State<CourseListDialog> { // need to be bui
       return builder;
     }
 
+    /// Add children to the widget tree
     return Stack(
         children: buildChildren(),
     );

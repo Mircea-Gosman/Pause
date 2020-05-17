@@ -1,3 +1,9 @@
+# -----------------------------------------------------------
+# Declaractive database session creation (source: docs)
+#
+# 2020 Mircea Gosman, Terrebonne, Canada
+# email mirceagosman@gmail.com
+# -----------------------------------------------------------
 import os
 
 from sqlalchemy import create_engine
@@ -26,9 +32,15 @@ def init_db():
     import Models.Models
     Base.metadata.create_all(bind=engine)
 
-# Remove Database. prefix on Database file import in Models.py
+
+
+# -----------------------------------------------------------
+# Instructions to create the database:
+# -----------------------------------------------------------
+# Remove Database. prefix on db file import in Models.py
 # From terminal in Database folder do:
 # from Database import init_db
 # init_db()
 # exit()
-# Put back Database. prefix on Database File import in Models.py
+# Put back Database. prefix on db File import in Models.py
+# -----------------------------------------------------------

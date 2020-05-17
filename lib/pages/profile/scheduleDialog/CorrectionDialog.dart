@@ -1,3 +1,10 @@
+/**-----------------------------------------------------------
+ * Dialog allowing user to alter the server's
+ * analyzis of the schedule's picture
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -6,29 +13,32 @@ import 'package:pause_v1/pages/profile/scheduleDialog/CourseListDialogStreamHold
 import 'package:pause_v1/server/Server.dart';
 import 'package:pause_v1/services/screenSize.dart';
 import 'package:pause_v1/user/schedule/Day.dart';
-import 'package:pause_v1/user/schedule/Course.dart';
 import 'package:provider/provider.dart';
 import 'package:align_positioned/align_positioned.dart';
 
+/// CorrectionDialog parent widget
 class CorrectionDialog extends StatefulWidget {
-  final StreamController<bool> scheduleStreamController;
-  final StreamController<bool> dialogStreamController;
+  final StreamController<bool> scheduleStreamController;  // Callback to close parent widget
+  final StreamController<bool> dialogStreamController;    // Callback to close this widget
+
+  /// Initializer
   CorrectionDialog({Key key,  this.scheduleStreamController, this.dialogStreamController}) : super(key: key);
 
+  /// Create state
   @override
   _CorrectionDialogState createState() => _CorrectionDialogState();
 }
 
-
+/// CorrectionDialog state
 class _CorrectionDialogState extends State<CorrectionDialog> with SingleTickerProviderStateMixin {
-  List<Day> days;
-  int dayIndex = 0;
-  bool backwards = false;
-  Animation<double> animation;
-  AnimationController _controller;
-  Duration animationDuration = Duration(milliseconds: 500);
-  StreamController<List<Course>> newCoursesStream = StreamController<List<Course>>.broadcast();
+  List<Day> days;                                                                                 // User's schedule's days
+  int dayIndex = 0;                                                                               // Current progression in the dialog
+  bool backwards = false;                                                                         // Whether progression should move backwards
+  Animation<double> animation;                                                                    // Fade animation
+  AnimationController _controller;                                                                // Fade animation controller
+  Duration animationDuration = Duration(milliseconds: 500);                                       // Fade animation duration
 
+  /// Initialize the state
   @override
   void initState() {
     super.initState();
@@ -36,7 +46,7 @@ class _CorrectionDialogState extends State<CorrectionDialog> with SingleTickerPr
     // Access user data
     days =  Provider.of<Server>(context, listen: false).user.schedule.days;
 
-    // Animation setup
+    // Animation controller setup
     _controller = AnimationController(
         duration: animationDuration, vsync: this);
 
@@ -51,15 +61,15 @@ class _CorrectionDialogState extends State<CorrectionDialog> with SingleTickerPr
           dayIndex ++;
         }
 
+        // Dont fade-in on end of dialog
         if (dayIndex != days.length) {
-          newCoursesStream.add(days[dayIndex].courses);
-
           // Fade in animation
           _controller.reverse();
         }
       }
     });
-    
+
+    // Animation setup
     animation =
     Tween<double>(begin: 1, end: 0).animate(
         CurvedAnimation(
@@ -73,26 +83,27 @@ class _CorrectionDialogState extends State<CorrectionDialog> with SingleTickerPr
       });
   }
 
+  /// Dispose of the animation controller
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
+  /// Run the fade-out animation
   void runOpacityAnimation(){
     _controller.forward();
   }
 
+  /// Build the UI
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        // Upload text
+        // Day title
         AlignPositioned(
           alignment: Alignment.topCenter,
           dy:  ScreenSize.unitHeight * 20,
-          //top: ScreenSize.unitHeight * 15,
-          //left: ScreenSize.unitWidth * 25,
 
           child: FadeTransition(
             opacity: animation,
@@ -103,6 +114,7 @@ class _CorrectionDialogState extends State<CorrectionDialog> with SingleTickerPr
               ),
           ),
         ),
+        // Course List
         Positioned(
           child: FadeTransition(
             opacity: animation,
@@ -132,11 +144,12 @@ class _CorrectionDialogState extends State<CorrectionDialog> with SingleTickerPr
                     size: ScreenSize.unitWidth * 14,
                   ),
                   onPressed: () {
-                    // TODO
+                    // Allow for backwards navigation if not the first day
                     if(dayIndex != 0){
                       backwards = true;
                       runOpacityAnimation();
                     } else {
+                      // Close all dialogs
                       widget.scheduleStreamController.add(false);
                       widget.dialogStreamController.add(true);
                     }

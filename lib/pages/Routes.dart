@@ -1,3 +1,9 @@
+/**-----------------------------------------------------------
+ * Page routes mapping
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'package:flutter/material.dart';
 import 'login/LoginPage.dart';
 import 'homePage/HomePage.dart';

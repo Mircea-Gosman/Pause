@@ -1,8 +1,14 @@
+/**-----------------------------------------------------------
+ * UploadDialog TimeStamps
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'package:flutter/material.dart';
 import 'package:pause_v1/pages/profile/scheduleDialog/CourseListDialogStreamHolder.dart';
 import 'package:pause_v1/services/screenSize.dart';
 
-
+/// TimeStamp parent widget
 class TimeStamp extends StatefulWidget {
   double indent;
   Map source;
@@ -15,26 +21,14 @@ class TimeStamp extends StatefulWidget {
 
 }
 
+/// TimeStamp state
 class _TimeStampState extends State<TimeStamp> {
-  @override
-  void initState(){
-    super.initState();
-
-  }
-
-  @override
-  didChangeDependencies(){
-    super.didChangeDependencies();
-  }
-
-
+  // Build UI
   @override
   Widget build(BuildContext context) {
-
+    // Listen to reviewTimeStream for content updates
     CourseListDialogStreamHolder.of(context).reviewTimeStreamController.stream.listen((updatedSource){
-     // print('timestamp:');
-      //print(updatedSource['time']);
-
+      // Check if the update occured on this TimeStamp
       if(updatedSource['course'] == widget.source['course'] && updatedSource['isStart'] == widget.source['isStart']){
         setState(() {
           widget.source['time'] = updatedSource['time'];
@@ -42,17 +36,18 @@ class _TimeStampState extends State<TimeStamp> {
       }
     });
 
+    // Check for null content
     bool nullText = widget.source['time'] == null;
 
-    // Indent questionmarks
+    // Indent question marks for positioning
     if (nullText) {
       if(widget.indent != null)
         widget.indent += ScreenSize.unitWidth * 10;
       else
         widget.indent = ScreenSize.unitWidth * 9;
-
     }
 
+    // Build UI
     return Positioned(
           left: widget.indent == null ? 0 : widget.indent,
 
@@ -60,7 +55,10 @@ class _TimeStampState extends State<TimeStamp> {
             !nullText ? widget.source['time'] : '?',
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: ScreenSize.unitHeight * 5, color: widget.source['time'].contains('?') || nullText ? Colors.red : Colors.black),
+            style: TextStyle(
+                fontSize: ScreenSize.unitHeight * 5,
+                color: widget.source['time'].contains('?') || nullText ? Colors.red : Colors.black
+            ),
           ),
         );
   }

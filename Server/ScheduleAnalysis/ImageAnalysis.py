@@ -270,13 +270,15 @@ class ImageAnalysis:
         # Return a list of columns of paired corners
         return connectedCorners
 
-    # Pair each connectedCorner with a connectedCorner from directly adjacent column
+    # Pair each connectedCorner with the one following it to form cells
     def buildCells(self, connectedCorners):
-        gridCells = []
+        gridCells = [] # List of columns containing the cells
 
         for i in range(len(connectedCorners)):
+            # Keep column structure
             gridCells.append([])
             for j in range(len(connectedCorners[i])):
+                # Pair current with following
                 if j != len(connectedCorners[i]) - 1:
                     gridCells[i].append([connectedCorners[i][j], connectedCorners[i][j + 1]])
 
@@ -285,13 +287,15 @@ class ImageAnalysis:
 
     # Run Tesseract on every cell
     def extractText(self, gridCells, scheduleCrop):
-        days = []
-        times = []
+        days = []   # List holding cells containing classes information
+        times = []  # List holding cells containing time information
 
+        # Browse columns
         for i in range(len(gridCells)):
             if i != 0: # First column is the times' column
                 days.append([]) # Create columns
 
+            # Browse cells
             for j in range(len(gridCells[i])):
                 # Crop Image
                 cellImg = scheduleCrop[int(gridCells[i][j][0][0][1]):int(gridCells[i][j][1][1][1]), int(gridCells[i][j][0][0][0]):int(gridCells[i][j][1][1][0])]
@@ -307,6 +311,7 @@ class ImageAnalysis:
                     imageData= pytesseract.image_to_data(cellImg, lang = 'fra',output_type=Output.DICT, config=r'--oem 1')
 
                     if i == 0:
+                        # Filter inaccurate readings
                         text = self.filterText(imageData)
                         if len(text) != 0:
                             # Create information cell
@@ -325,67 +330,95 @@ class ImageAnalysis:
                             days[i - 1][len(days[i - 1]) - 1].append(gridCells[i][j])
                             days[i - 1][len(days[i - 1]) - 1].append(text)
 
+        # Return lists of times and days containing text and position information
         return times, days
 
     # Filter tesseract output
     def filterText(self, imageData):
-        text = []
+        text = [] # Filtered text list
+
+        # Browse trough imageData's lines
         for k in range(len(imageData['level'])):
-            if int(imageData['conf'][k]) != -1  and imageData['text'][k] != '': # remove low confidence and empty results
+            # Remove low confidence and empty results
+            if int(imageData['conf'][k]) != -1  and imageData['text'][k] != '':
                 text.append(imageData['text'][k])
+
+        # Return a filtered version of imageData
         return text
 
     # Add references for user if errors in timestamps are detected
     def formatTimes(self, times):
+
+        # Browse time cells
         for timeCell in times:
+            #
             if len(timeCell[1]) < 2:
                 timeCell[1].append('?') # Leave reference to be changed by user in app
             else:
+                # Browse timestamps
                 for i in range(len(timeCell[1])):
-                    # keep only numeric caracters
+                    # Keep only numeric caracters
                     timeCell[1][i] = re.sub('[^0-9]','', timeCell[1][i])
 
+                    # Browse timestamp characters
                     for j in range(len(timeCell[1][i])):
+                        # Extract character out of structure
                         c = int(timeCell[1][i][j])
 
+                        # Question validity of low length timestamps
                         if len(timeCell[1][i]) > 4 or (j == 0 and  c > 2) or (j == 2 and c > 5):
                             timeCell[1][i] = timeCell[1][i] + '?' # Let user know he might want to change the field
                             break
 
-        # Could technically try to build f(timeStampInMinutes) = yCoordinateOfTimeStamp and attempt error corrections but not doing so for simplicity (atm).
+        # Could technically try to build f(timeStampInMinutes) = yCoordinateOfTimeStamp and attempt error corrections but not doing so for simplicity (at the moment).
 
+    # Extract and normalize day titles if necessary
     def formatDays(self, days):
-        prefixeTitles = ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim']
-        dayTitles = []
-        titleCount = 0
+        prefixeTitles = ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim']   # Normalized titles
+        dayTitles = []                                                      # Final titles
+        titleCount = 0                                                      # Number of valid custom titles
 
+        # Browse days
         for day in days:
+            # Browse prefixes
             for title in prefixeTitles:
+                # Count number of valid custom titles
                 if title in day[0][1].lower():
                     titleCount += 1
                     dayTitles.append(title)
 
+        # Keep custom day titles if more than half of them are valid
         if titleCount >= len(days)/2:
             for day in days:
                 del day[0]
         else:
             dayTitles = []
 
+        # Return a list of day titles (strings) identified in the schedule
         return dayTitles
 
+    # Assign time bounds to courses
     def assignCourseTimeBounds(self, times, days):
+        # Browse days
         for day in days:
+            # Browse courses
             for course in day:
+                # Time string default initializers
                 startTime = times[0][1][0]  # times|cell|text|line
                 endTime = times[0][1][0]
-                                    # course|posData|con|corn|y    times|cell|posData|con|corn|y
+
+                # Y-coordinate distance default initializers
+                # Structure:          course|posData|con|corn|y    times|cell|posData|con|corn|y
                 minStartTimeDistance = abs(course[0][0][0][1] - times[0][0][0][0][1])
                 minEndTimeDistance = abs(course[0][1][0][1] - times[0][0][0][0][1])
 
+                # Browse time cells
                 for timeCell in times:
+                    # Get current distance
                     topDiff = abs(course[0][0][0][1] - timeCell[0][0][0][1])
                     botDiff = abs(course[0][1][0][1] - timeCell[0][1][0][1])
 
+                    # Identify start time and end time from each other
                     if topDiff < minStartTimeDistance:
                         minStartTimeDistance = topDiff
                         startTime = timeCell[1][0]

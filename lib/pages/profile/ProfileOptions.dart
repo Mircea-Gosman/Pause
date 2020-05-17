@@ -1,3 +1,9 @@
+/**-----------------------------------------------------------
+ * Lower screen buttons in the ProfilePage
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -6,36 +12,46 @@ import 'package:pause_v1/services/screenSize.dart';
 import '../../Services/LocationService.dart';
 
 
-// Profile page buttons set
+/// ProfileOptions parent widget
 class ProfileOptions extends StatefulWidget{
+  // Callback reference for opening/closing the schedule upload dialog
   StreamController<bool> scheduleFlow = StreamController<bool>.broadcast();
 
+  /// Initializer
   ProfileOptions({Key key}) : super(key: key);
 
   @override
   _ProfileOptionsState createState() => _ProfileOptionsState();
 }
 
+/// ProfileOptions state
 class _ProfileOptionsState extends State<ProfileOptions> {
-  final Duration _duration = Duration(milliseconds: 300);
-  final Cubic _curveForm = Curves.easeOut;
-  final double _initialY = ScreenSize.unitHeight * 73;
-  final double _initialRightX = ScreenSize.unitWidth * 68;
-  final double _initialLeftX = ScreenSize.unitWidth * 9;
-  double movementY = 0;
-  double rightMovement = 0;
-  double leftMovement = 0;
-  bool _isOnScreen = false;
+  final Duration _duration = Duration(milliseconds: 300);  // Animation duration
+  final Cubic _curveForm = Curves.easeOut;                 // Animation smoothness
+  final double _initialY = ScreenSize.unitHeight * 73;     // Initial position Y
+  final double _initialRightX = ScreenSize.unitWidth * 68; // Initial right btn X
+  final double _initialLeftX = ScreenSize.unitWidth * 9;   // Initial left btn X
+  double movementY = 0;                                    // Animation position offset Y
+  double rightMovement = 0;                                // Anim. right btn position offset X
+  double leftMovement = 0;                                 // Anim. left btn position offset X
+  bool _isOnScreen = false;                                // Upload dialog on/off
 
+  /// State initializer
   @override
   void initState(){
     super.initState();
+
+    // Instantiate upload dialog stream listener
     widget.scheduleFlow.stream.listen((status){
+      // bool status : Upload dialog button engaged/disengaged
+
       setState(() {
+        // Inverse dialog state
         _isOnScreen = !_isOnScreen;
 
+        // Retract dialog based on button click
         if (status) {
-          movementY =  ScreenSize.unitHeight * 100 - _initialY - 10; // Put off-screen, remove -10 in final
+          movementY =  ScreenSize.unitHeight * 100 - _initialY - 10;
           rightMovement = ScreenSize.unitWidth * 76 - _initialRightX;
           leftMovement = _initialLeftX;
         } else {
@@ -47,11 +63,12 @@ class _ProfileOptionsState extends State<ProfileOptions> {
     });
   }
 
+  /// Build UI
   @override
   Widget build(BuildContext context) {
     return Stack(
         children: <Widget>[
-          // Add Schedule Button
+          // Schedule Button
           AnimatedPositioned(
             duration: _duration,
             curve: _curveForm,
@@ -132,7 +149,9 @@ class _ProfileOptionsState extends State<ProfileOptions> {
     );
   }
 
+  /// Trigger dialog appearance callback
   void _retractUI() {
+      // Close dialog if open, open dialog if closed
       if (_isOnScreen) {
           widget.scheduleFlow.add(true);
         } else {

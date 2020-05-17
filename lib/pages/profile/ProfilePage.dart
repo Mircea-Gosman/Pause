@@ -1,3 +1,9 @@
+/**-----------------------------------------------------------
+ * The application's ProfilePage
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'package:flutter/material.dart';
 import 'package:pause_v1/pages/profile/scheduleDialog/ScheduleDialog.dart';
 import 'ProfileOptions.dart';
@@ -5,14 +11,16 @@ import 'ProfileBar.dart';
 
 
 class ProfilePage extends StatelessWidget {
-  var addDialog = false;
 
+  // Build the UI
   @override
   Widget build (BuildContext context) {
-    ProfileOptions profileOptions = ProfileOptions();
-    ProfileBar profileBar = ProfileBar.fromOptions(profileOptions.scheduleFlow.stream);
-    ScheduleDialog scheduleDialog = ScheduleDialog(scheduleStreamController: profileOptions.scheduleFlow);
+    // Instantiate UI components
+    ProfileOptions profileOptions = ProfileOptions();                                                         // Lower buttons
+    ProfileBar profileBar = ProfileBar.fromOptions(profileOptions.scheduleFlow.stream);                       // Upper screen components
+    ScheduleDialog scheduleDialog = ScheduleDialog(scheduleStreamController: profileOptions.scheduleFlow);    // Schedule upload dialog
 
+    /// Add UI components to a list
     List<Widget> buildChildren() {
       var builder = [
         profileBar,
@@ -33,6 +41,7 @@ class ProfilePage extends StatelessWidget {
       return builder;
     }
 
+    // Add the component list to the widget tree
     return new Scaffold(
       body: Stack(
         children: buildChildren()

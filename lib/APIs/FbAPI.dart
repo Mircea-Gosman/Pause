@@ -1,3 +1,9 @@
+/**-----------------------------------------------------------
+ * Facebook API connection
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 import 'package:http/http.dart' as http;
@@ -7,13 +13,15 @@ import 'package:pause_v1/server/Server.dart';
 
 class FbAPI {
 
+  /// Authenticate to Facebook
   static Future<void> loginToFB(Server server) async{
-    final facebookLogin = FacebookLogin();
-    final result = await facebookLogin.logIn(['user_friends']);
+    final facebookLogin = FacebookLogin();                      // FB Ref
+    final result = await facebookLogin.logIn(['user_friends']); // FB Auth
 
+    // Monitor Facebook authentication response
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
-        // Get user data from Facebook
+        // Store user data from Facebook into User
         _getGeneralUser(result.accessToken.token, server);
         break;
       case FacebookLoginStatus.cancelledByUser:
@@ -28,21 +36,22 @@ class FbAPI {
     }
   }
 
+  /// Authenticate with server
   static void _getGeneralUser(String token, Server server) async{
+    // Get Facebook user data
     final graphResponse = await http.get(
         'https://graph.facebook.com/v2.12/me?fields=id,picture,friends&access_token=${token}');
-    final profile = JSON.jsonDecode(graphResponse.body);
-    final profilePictureURL = profile['picture']['data']['url']; // Format of picture obj.: {data: {height: 50, is_silhouette: false, url: https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=2244735515835110&height=50&width=50&ext=1585085593&hash=AeT70MYhWvAdn6ua, width: 50}}
-    final friendList = profile['friends']['data'];               // Format of friends obj.: {data: [], summary: {total_count: 216}} ;; it only includes friends that use the app & who give permission
-    // [{name: Mircea Gosman, id: 2244735515835110}]
-    //friendList[i]['id'];
-    print('Friends:');
-    print(friendList);
 
+    // Parse said data
+    final profile = JSON.jsonDecode(graphResponse.body);
+
+    // Update user with the parsed data
     server.user.key = profile['id'];
-    server.user.profilePictureURL = profilePictureURL; //TODO: Store the picture locally
-    server.user.setFriendList(friendList, 'fb');
+    server.user.profilePictureURL = profile['picture']['data']['url']; //TODO: Store the picture locally
+    server.user.setFriendList(profile['friends']['data'], 'fb');
     // TODO: Configure server-side webhooks for facebook native post-login friend List updates.
+
+    // Proceed to authenticate with the server
     await server.auth();
   }
 

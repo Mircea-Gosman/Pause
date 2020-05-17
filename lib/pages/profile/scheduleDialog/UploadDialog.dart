@@ -1,3 +1,9 @@
+/**-----------------------------------------------------------
+ * Dialog inciting the user to upload his schedule
+ *
+ * 2020 Mircea Gosman, Terrebonne, Canada
+ * email mirceagosman@gmail.com
+ * --------------------------------------------------------- */
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -5,27 +11,30 @@ import 'package:pause_v1/services/screenSize.dart';
 import 'package:pause_v1/server/Server.dart';
 import 'package:provider/provider.dart';
 
-
+/// UploadDialog parent widget
 class UploadDialog extends StatefulWidget {
-  final StreamController<bool> scheduleStreamController;
-  final StreamController<bool> dialogStreamController;
+  final StreamController<bool> scheduleStreamController;  // Callback ref for closing the schedule dialog
+  final StreamController<bool> dialogStreamController;    // Callback ref for opening the correction dialog
+
+  /// Initializer
   UploadDialog({Key key,  this.scheduleStreamController, this.dialogStreamController}) : super(key: key);
 
+  /// Create state
   @override
   _UploadDialogState createState() => _UploadDialogState();
 }
 
-
+/// UploadDialog state
 class _UploadDialogState extends State<UploadDialog> {
 
-
+  /// Initialize state
   @override
   void initState(){
     super.initState();
 
-    // Listener init: Close dialog when the server finishes analysing the schedule
+    // Listener init: Close dialog when the server finishes analyzing the schedule
     Provider.of<Server>(context, listen: false).finishedOperationStream = StreamController<String>.broadcast();
-    Provider.of<Server>(context, listen: false).finishedOperationStream.stream.listen((operation){ // TODO: server needs to open and close its stream on function calls.
+    Provider.of<Server>(context, listen: false).finishedOperationStream.stream.listen((operation){
       setState(() {
         if(operation == 'AnalyseSchedule'){
           widget.dialogStreamController.add(false);
@@ -35,6 +44,7 @@ class _UploadDialogState extends State<UploadDialog> {
     });
   }
 
+  /// Build the UI
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -68,7 +78,7 @@ class _UploadDialogState extends State<UploadDialog> {
                     size: ScreenSize.unitWidth * 19,
                   ),
                   onPressed: () {
-                    // Analyse schedule
+                    // Analyse schedule using the server
                     Provider.of<Server>(context, listen: false).analyseSchedule();
                   },
                 ),
@@ -95,7 +105,7 @@ class _UploadDialogState extends State<UploadDialog> {
                       size: ScreenSize.unitWidth * 14,
                     ),
                     onPressed: () {
-                      // TODO
+                      // Close the schedule dialog
                       widget.scheduleStreamController.add(false);
                     },
                   ),
