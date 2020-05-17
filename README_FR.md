@@ -4,7 +4,7 @@
 
 
 
-## Résumé
+## Contexte
 La transition du secondaire vers le Cégep peut sembler ambigüe. Parmi les défis que doivent relever les étudiants, il y a la difficulté de se retrouver entre amis lorsque chacun possède un horaire différent. En ce moment, *Omnivox*, de Skytech Communications, fournit à tous les collègiens québecois un horaire scolaire intrinsèque à une application mobile. Le projet ici présenté a pour but de faire usage de captures d'écran des horaires des usagers afin de connecter les étudiants pendant leurs temps libres communs. 
 
 Ce projet fait office de projet d'intégration dans le cadre la session terminale du programme de Sciences informatique et mathématique du Cégep de Bois-de-Boulogne (de Février à Mai 2020).
