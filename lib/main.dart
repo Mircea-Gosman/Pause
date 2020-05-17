@@ -62,11 +62,13 @@ class Pause extends StatelessWidget {
 }
 
 /*
+---------------------------------------------------------------------------------------------------------
 References:
-
+---------------------------------------------------------------------------------------------------------
 Provider [ https://pub.dev/packages/provider ] idea:
 https://medium.com/coding-with-flutter/flutter-global-access-vs-scoped-access-with-provider-8d6b94393bdf
 
 Project file structure idea:
 https://medium.com/flutter-community/flutter-code-organization-revised-b09ad5cef7f6
+---------------------------------------------------------------------------------------------------------
  */
