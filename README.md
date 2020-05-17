@@ -6,7 +6,7 @@
 ## Abstract
 The transition from high school to CEGEP is not always an easy one. Among challenges students face, there is the hardship of matching their friends' free time to their own in order to enjoy eachother's company. At the moment, *Omnivox*, by Skytech Communications, supplies all CEGEP students from Québec with a proprietary version of their schedule. The current project aims to utilize screenshots of these schedules in order to connect students with others among their Facebook friends during shared free time. 
 
-This project serves as the end of CEGEP integration project for the Computer Science and mathematics program at Collège de Bois-de-Boulogne (February to May 2020).
+This project serves as the end of CEGEP integration project for the Computer Science and mathematics program at Collège de Bois-de-Boulogne (February to May 2020). While in an incomplete state, it purposes itself as an introduction to various technologies.
 
 ## Image analysis process
 Since the starting image is meant to be a screenshot from the user's screen, custom image segmentation is mandatory to obtain decent acceptable OCR results. 
