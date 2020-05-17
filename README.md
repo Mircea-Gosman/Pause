@@ -1,4 +1,6 @@
-# Pause (Flask hosted schedule image analysis with android mobile app client)
+# Pause 
+
+### (Flask hosted schedule image analysis with android mobile app client)
 
 *[Version française](https://github.com/Mircea-Gosman/pause_v1/blob/master/README_FR.md)*
 
