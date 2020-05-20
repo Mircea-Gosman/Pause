@@ -10,8 +10,8 @@ import 'package:pause_v1/services/screenSize.dart';
 
 /// TimeStamp parent widget
 class TimeStamp extends StatefulWidget {
-  double indent;
-  Map source;
+  double indent; // Indentation appliquée lorsque le texte est trop court (i.e. '?')
+  Map source;    // Source des informations du widget
 
 
   TimeStamp({Key key, this.indent, @required this.source}) : super(key: key);
